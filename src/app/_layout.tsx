@@ -28,7 +28,12 @@ export default function Layout() {
               headerShown: false,
             }}
             initialRouteName="/"
-          />
+          >
+            <Stack.Screen
+              name="preview/[imageUri]"
+              options={{ headerShown: true }}
+            />
+          </Stack>
         </Material3ThemeProvider>
       </PersistGate>
     </Provider>

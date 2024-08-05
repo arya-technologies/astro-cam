@@ -1,32 +1,22 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import {
-  CameraView,
-  CameraType,
-  useCameraPermissions,
   CameraMode,
-  CameraViewRef,
-  VideoQuality,
+  CameraType,
+  CameraView,
   ImageType,
+  useCameraPermissions,
 } from "expo-camera";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   Button,
+  Dialog,
   IconButton,
-  Icon,
+  Portal,
+  RadioButton,
   Surface,
   Text,
-  Portal,
-  Dialog,
-  List,
-  RadioButton,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -42,12 +32,15 @@ export default function index() {
 
   const [facing, setfacing] = useState<CameraType>("back");
   const [mode, setmode] = useState<CameraMode>("picture");
-  const [videoQuality, setvideoQuality] = useState<VideoQuality>("4:3");
+  // const [videoQuality, setvideoQuality] = useState<VideoQuality>("4:3");
   const [camera, setcamera] = useState<CameraView | null>();
   const [pictureSize, setpictureSize] = useState<string>("3000x3000");
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [maxDuration, setmaxDuration] = useState<number>(30);
+  const [maxDuration, setmaxDuration] = useState<number>(10);
   const [imageType, setimageType] = useState<ImageType>("png");
+  const [isrecording, setisrecording] = useState<boolean>(false);
+
+  const [imageUri, setimageUri] = useState<string | undefined>();
 
   useEffect(() => {
     camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
@@ -79,13 +72,20 @@ export default function index() {
   }
   async function handleCapture() {
     if (mode === "picture") {
-      await camera?.takePictureAsync({
+      const data = await camera?.takePictureAsync({
         imageType,
         quality: 1,
         skipProcessing: true,
       });
+      setimageUri(data?.uri);
     } else if (mode === "video") {
-      await camera?.recordAsync({ maxDuration });
+      if (!isrecording) {
+        setisrecording(true);
+        await camera?.recordAsync({ maxDuration });
+      } else {
+        setisrecording(false);
+        camera?.stopRecording();
+      }
     }
   }
 
@@ -103,7 +103,6 @@ export default function index() {
           <Surface elevation={4} className="rounded-lg overflow-hidden h-full">
             <CameraView
               ref={(ref) => setcamera(ref)}
-              videoQuality={videoQuality}
               videoStabilizationMode="off"
               facing={facing}
               pictureSize={pictureSize}
@@ -115,8 +114,17 @@ export default function index() {
         </View>
         <View className="flex-grow">
           <View className="flex-row justify-center">
-            <Icon source="chevron-up" size={24} />
-            <IconButton icon="camera-reverse" onPress={showResDialog} />
+            <IconButton icon="chevron-up" onPress={showResDialog} />
+            <IconButton
+              icon="home"
+              onPress={() =>
+                imageUri &&
+                router.navigate({
+                  pathname: `preview/[imageUri]`,
+                  params: { imageUri },
+                })
+              }
+            />
           </View>
           <View className="flex-row flex-grow items-center justify-evenly">
             <IconButton
@@ -127,7 +135,9 @@ export default function index() {
               onPress={handleCapture}
               className="w-20 h-20 rounded-full"
               style={{
-                backgroundColor: colors.onSurfaceVariant,
+                backgroundColor: isrecording
+                  ? colors.scrim
+                  : colors.onSurfaceVariant,
                 borderWidth: 4,
                 borderColor: colors.outline,
               }}
@@ -140,7 +150,7 @@ export default function index() {
         <Dialog
           visible={isResDialogVisible}
           onDismiss={hideResDialog}
-          style={{ maxHeight: "50%" }}
+          style={{ maxHeight: "75%" }}
         >
           <Dialog.Title>Resolution</Dialog.Title>
           <Dialog.ScrollArea>
