@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "astro-cam",
+    "name": "Astro-Cam",
     "slug": "astro-cam",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,7 +24,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.notscripter.astrocam"
     },
     "androidStatusBar": {},
     "androidNavigationBar": {},
@@ -39,6 +44,14 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "396d1334-6f1f-47aa-83c2-2857ea7e7caa"
+      }
+    }
   }
 }
