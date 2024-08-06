@@ -1,4 +1,6 @@
+import * as FileSystem from "expo-file-system";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
+import Slider from "@react-native-community/slider";
 import {
   CameraMode,
   CameraType,
@@ -8,14 +10,21 @@ import {
 } from "expo-camera";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   Button,
   Dialog,
   IconButton,
+  List,
   Portal,
   RadioButton,
-  Surface,
   Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,7 +32,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
-  const { width, height } = Dimensions.get("window");
   const [permission, requestPermission] = useCameraPermissions();
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
@@ -39,6 +47,8 @@ export default function index() {
   const [maxDuration, setmaxDuration] = useState<number>(10);
   const [imageType, setimageType] = useState<ImageType>("png");
   const [isrecording, setisrecording] = useState<boolean>(false);
+  const [iso, setiso] = useState<number>(0);
+  const [exposure, setexposure] = useState<number>(0);
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
@@ -111,10 +121,37 @@ export default function index() {
           />
         </View>
         <View className="flex-grow">
-          <View className="flex-row justify-center">
-            <IconButton icon="chevron-up" onPress={showResDialog} />
-            <IconButton
-              icon="home"
+          <View className="flex-1 flex-grow justify-center items-end">
+            <List.Section>
+              <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
+              <Slider
+                minimumValue={1}
+                maximumValue={10}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                step={1}
+                value={iso}
+                onValueChange={setiso}
+              />
+            </List.Section>
+            <List.Section>
+              <List.Item
+                title="Exposure"
+                right={() => <Text>{exposure}</Text>}
+              />
+              <Slider
+                minimumValue={1}
+                maximumValue={10}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                step={1}
+                value={exposure}
+                onValueChange={setexposure}
+              />
+            </List.Section>
+          </View>
+          <View className="flex-row flex-grow items-center justify-evenly">
+            <Pressable
               onPress={() =>
                 imageUri &&
                 router.navigate({
@@ -122,13 +159,12 @@ export default function index() {
                   params: { imageUri },
                 })
               }
-            />
-          </View>
-          <View className="flex-row flex-grow items-center justify-evenly">
-            <IconButton
-              icon={mode === "video" ? "camera" : "videocam"}
-              onPress={toggleCameraMode}
-            />
+            >
+              <Image
+                source={{ uri: imageUri }}
+                className="w-20 h-20 rounded-full"
+              />
+            </Pressable>
             <TouchableOpacity
               onPress={handleCapture}
               className="w-20 h-20 rounded-full"
@@ -140,7 +176,10 @@ export default function index() {
                 borderColor: colors.outline,
               }}
             />
-            <IconButton icon="camera-reverse" onPress={toggleCameraFacing} />
+            <IconButton
+              icon={mode === "video" ? "camera" : "videocam"}
+              onPress={toggleCameraMode}
+            />
           </View>
         </View>
       </View>

@@ -18,7 +18,8 @@
       "icon": "./assets/icon.png"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.notscripter.astrocam"
     },
     "android": {
       "adaptiveIcon": {
