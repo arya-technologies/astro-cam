@@ -32,6 +32,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
+  const { width, height } = Dimensions.get("window");
   const [permission, requestPermission] = useCameraPermissions();
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
@@ -44,11 +45,11 @@ export default function index() {
   const [camera, setcamera] = useState<CameraView | null>();
   const [pictureSize, setpictureSize] = useState<string>("3000x3000");
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [maxDuration, setmaxDuration] = useState<number>(10);
   const [imageType, setimageType] = useState<ImageType>("png");
   const [isrecording, setisrecording] = useState<boolean>(false);
   const [iso, setiso] = useState<number>(0);
   const [exposure, setexposure] = useState<number>(0);
+  const [zoom, setzoom] = useState<number>(0);
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
@@ -60,6 +61,10 @@ export default function index() {
     return <View />;
   }
 
+  const requestPermissions = () => {
+    requestPermission();
+  };
+
   if (!permission.granted) {
     return (
       <View
@@ -67,7 +72,7 @@ export default function index() {
         style={{ backgroundColor: colors.surface }}
       >
         <Text>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} mode="elevated">
+        <Button onPress={requestPermissions} mode="elevated">
           Grant Permission
         </Button>
       </View>
@@ -79,6 +84,9 @@ export default function index() {
   }
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
+    setiso(0);
+    setexposure(0);
+    setzoom(0);
   }
   async function handleCapture() {
     if (mode === "picture") {
@@ -91,13 +99,19 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        await camera?.recordAsync({ maxDuration });
+        const data = await camera?.recordAsync({
+          maxDuration: exposure !== 0 ? exposure : undefined,
+        });
+        setimageUri(data?.uri);
       } else {
         setisrecording(false);
         camera?.stopRecording();
       }
     }
   }
+
+  const imagesDir = FileSystem.documentDirectory + "images";
+  const videosDir = FileSystem.documentDirectory + "videos";
 
   return (
     <>
@@ -117,18 +131,20 @@ export default function index() {
             pictureSize={pictureSize}
             mode={mode}
             mute
+            zoom={zoom}
             className="w-[95vw] h-[95vw] my-[5vw]"
           />
         </View>
         <View className="flex-grow">
-          <View className="flex-1 flex-grow justify-center items-end">
+          <View className="flex-1 flex-grow justify-evenly">
             <List.Section>
               <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
               <Slider
-                minimumValue={1}
+                minimumValue={0}
                 maximumValue={10}
                 minimumTrackTintColor={colors.outline}
                 maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
                 step={1}
                 value={iso}
                 onValueChange={setiso}
@@ -140,17 +156,31 @@ export default function index() {
                 right={() => <Text>{exposure}</Text>}
               />
               <Slider
-                minimumValue={1}
+                minimumValue={0}
                 maximumValue={10}
                 minimumTrackTintColor={colors.outline}
                 maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
                 step={1}
                 value={exposure}
                 onValueChange={setexposure}
               />
             </List.Section>
+            <List.Section>
+              <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
+              <Slider
+                minimumValue={0}
+                maximumValue={1}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
+                step={0.1}
+                value={zoom}
+                onValueChange={setzoom}
+              />
+            </List.Section>
           </View>
-          <View className="flex-row flex-grow items-center justify-evenly">
+          <View className="flex-row items-center justify-evenly py-4">
             <Pressable
               onPress={() =>
                 imageUri &&
@@ -161,8 +191,10 @@ export default function index() {
               }
             >
               <Image
-                source={{ uri: imageUri }}
-                className="w-20 h-20 rounded-full"
+                source={{
+                  uri: imageUri ? imageUri : "../../assets/splash.png",
+                }}
+                className="w-16 h-16 rounded-full"
               />
             </Pressable>
             <TouchableOpacity
@@ -177,6 +209,7 @@ export default function index() {
               }}
             />
             <IconButton
+              size={40}
               icon={mode === "video" ? "camera" : "videocam"}
               onPress={toggleCameraMode}
             />
