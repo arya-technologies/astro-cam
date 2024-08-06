@@ -125,6 +125,10 @@ export default function index() {
   const imagesDir = FileSystem.documentDirectory + "images";
   const videosDir = FileSystem.documentDirectory + "videos";
 
+  const handleSave = async () => {
+    const imagesAlbum = await MediaLibrary.getAlbumsAsync("AstroCam");
+  };
+
   return (
     <>
       <View
