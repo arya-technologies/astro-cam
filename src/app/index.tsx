@@ -92,25 +92,23 @@ export default function index() {
   return (
     <>
       <View
-        className="h-full flex-1 px-4"
+        className="h-full flex-1"
         style={{
           backgroundColor: colors.surface,
           paddingTop: top,
           paddingBottom: bottom,
         }}
       >
-        <View style={{ height: height / 1.25 }}>
-          <Surface elevation={4} className="rounded-lg overflow-hidden h-full">
-            <CameraView
-              ref={(ref) => setcamera(ref)}
-              videoStabilizationMode="off"
-              facing={facing}
-              pictureSize={pictureSize}
-              mode={mode}
-              mute
-              className="w-full h-full"
-            />
-          </Surface>
+        <View style={{}} className="items-center">
+          <CameraView
+            ref={(ref) => setcamera(ref)}
+            videoStabilizationMode="off"
+            facing={facing}
+            pictureSize={pictureSize}
+            mode={mode}
+            mute
+            className="w-[95vw] h-[95vw] my-[5vw]"
+          />
         </View>
         <View className="flex-grow">
           <View className="flex-row justify-center">
