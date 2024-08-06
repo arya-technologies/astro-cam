@@ -1,4 +1,5 @@
 import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@react-native-community/slider";
 import {
@@ -34,14 +35,14 @@ export default function index() {
   const { top, bottom } = useSafeAreaInsets();
   const { width, height } = Dimensions.get("window");
   const [permission, requestPermission] = useCameraPermissions();
+  const [mediaPermission, requestMediaPermission] =
+    MediaLibrary.usePermissions();
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
 
-  const [facing, setfacing] = useState<CameraType>("back");
   const [mode, setmode] = useState<CameraMode>("picture");
-  // const [videoQuality, setvideoQuality] = useState<VideoQuality>("4:3");
   const [camera, setcamera] = useState<CameraView | null>();
   const [pictureSize, setpictureSize] = useState<string>("3000x3000");
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
@@ -53,6 +54,19 @@ export default function index() {
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
+  async function ensureDirExists() {
+    const imagesDirInfo = await FileSystem.getInfoAsync(imagesDir);
+    const videosDirInfo = await FileSystem.getInfoAsync(videosDir);
+    if (!imagesDirInfo) {
+      console.log("images directories does not exists, creating...");
+      await FileSystem.makeDirectoryAsync(imagesDir);
+    }
+    if (!videosDirInfo) {
+      console.log("videos directories does not exists, creating...");
+      await FileSystem.makeDirectoryAsync(videosDir);
+    }
+  }
+
   useEffect(() => {
     camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
   }, [camera]);
@@ -63,9 +77,10 @@ export default function index() {
 
   const requestPermissions = () => {
     requestPermission();
+    requestMediaPermission();
   };
 
-  if (!permission.granted) {
+  if (!permission.granted && !mediaPermission?.granted) {
     return (
       <View
         className="h-full flex-1 items-center justify-center space-y-4"
@@ -79,9 +94,6 @@ export default function index() {
     );
   }
 
-  function toggleCameraFacing() {
-    setfacing((current) => (current === "back" ? "front" : "back"));
-  }
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
     setiso(0);
@@ -127,7 +139,7 @@ export default function index() {
           <CameraView
             ref={(ref) => setcamera(ref)}
             videoStabilizationMode="off"
-            facing={facing}
+            facing="back"
             pictureSize={pictureSize}
             mode={mode}
             mute
