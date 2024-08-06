@@ -1,10 +1,10 @@
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
+import * as Sharing from "expo-sharing";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@react-native-community/slider";
 import {
   CameraMode,
-  CameraType,
   CameraView,
   ImageType,
   useCameraPermissions,
