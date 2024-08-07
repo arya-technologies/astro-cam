@@ -6,13 +6,13 @@ export default function SettingsLayout() {
   return (
     <>
       <Appbar.Header mode="small">
-        <Appbar.Action
+        <Appbar.BackAction
           onPress={() => {
             router.back();
           }}
-          icon="arrow-back"
         />
         <Appbar.Content title="Preview" />
+        <Appbar.Action icon="ellipsis-vertical" />
       </Appbar.Header>
       <Slot />
     </>
