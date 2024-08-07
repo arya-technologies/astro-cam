@@ -1,6 +1,3 @@
-import * as FileSystem from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
-import * as Sharing from "expo-sharing";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@react-native-community/slider";
 import {
@@ -10,6 +7,7 @@ import {
   useCameraPermissions,
   VideoQuality,
 } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -52,17 +50,35 @@ export default function index() {
   const [iso, setiso] = useState<number>(0);
   const [exposure, setexposure] = useState<number>(0);
   const [zoom, setzoom] = useState<number>(0);
-  const [videoQuality, setvideoQuality] = useState<VideoQuality>("1080p");
+  const [videoQuality, setvideoQuality] = useState<VideoQuality>("480p");
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
+  const videoQualities: VideoQuality[] = ["480p", "720p", "1080p", "2160p"];
+  const [lastCapturedUri, setlastCapturedUri] = useState<string>();
+
   useEffect(() => {
-    camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
+    // camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
+    (async function () {
+      const album = await MediaLibrary.getAlbumAsync("AstroCam");
+      const albumAssets = await MediaLibrary.getAssetsAsync({
+        album,
+        mediaType: ["photo", "video"],
+        sortBy: "creationTime",
+      });
+      if (albumAssets) {
+        setlastCapturedUri(albumAssets.assets[0]?.uri);
+      }
+    })();
   }, [camera]);
 
   const requestPermissions = () => {
-    requestPermission();
-    requestMediaPermission();
+    if (!permission?.granted) {
+      requestPermission();
+    }
+    if (!mediaPermission?.granted) {
+      requestMediaPermission();
+    }
   };
 
   function toggleCameraMode() {
@@ -78,7 +94,7 @@ export default function index() {
         quality: 1,
         skipProcessing: true,
       });
-      setimageUri(data?.uri);
+      setlastCapturedUri(data?.uri);
       if (data) {
         addImage(data.uri);
       }
@@ -88,7 +104,7 @@ export default function index() {
         const data = await camera?.recordAsync({
           maxDuration: exposure !== 0 ? exposure : undefined,
         });
-        setimageUri(data?.uri);
+        setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
         }
@@ -99,8 +115,9 @@ export default function index() {
     }
   }
 
+  //NOTE: not getting album when separaed inages and videos
   async function addImage(imageUri: string) {
-    const imagesDir = "AstroCam/images";
+    const imagesDir = "AstroCam";
     const asset = await MediaLibrary.createAssetAsync(imageUri);
     const album = await MediaLibrary.getAlbumAsync(imagesDir);
     if (!album) {
@@ -111,7 +128,7 @@ export default function index() {
     }
   }
   async function addVideo(videoUri: string) {
-    const videosDir = "AstroCam/videos";
+    const videosDir = "AstroCam";
     const asset = await MediaLibrary.createAssetAsync(videoUri);
     const album = await MediaLibrary.getAlbumAsync(videosDir);
     if (!album) {
@@ -122,13 +139,11 @@ export default function index() {
     }
   }
 
-  const handleSave = async () => {};
-
   if (!permission) {
     return <View />;
   }
 
-  if (!permission.granted && !mediaPermission?.granted) {
+  if (!permission.granted || !mediaPermission?.granted) {
     return (
       <View
         className="h-full flex-1 items-center justify-center space-y-4"
@@ -166,44 +181,53 @@ export default function index() {
           />
         </View>
         <View className="flex-grow">
-          <View className="flex-1 flex-grow justify-evenly">
-            <List.Section>
-              <List.Accordion
-                title="Quality"
-                right={() => <Text>{videoQuality}</Text>}
-              >
-                <List.Item title="1080p" />
-              </List.Accordion>
-            </List.Section>
-            <List.Section>
-              <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
-              <Slider
-                minimumValue={0}
-                maximumValue={10}
-                minimumTrackTintColor={colors.outline}
-                maximumTrackTintColor={colors.onSurfaceVariant}
-                thumbTintColor={colors.primary}
-                step={1}
-                value={iso}
-                onValueChange={setiso}
+          <View className="flex-1 flex-grow justify-end">
+            {mode === "video" ? (
+              <>
+                <List.Section>
+                  <List.Item
+                    title="Quality"
+                    right={() => <Text>{videoQuality}</Text>}
+                    onPress={showResDialog}
+                  />
+                </List.Section>
+                <List.Section>
+                  <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={10}
+                    minimumTrackTintColor={colors.outline}
+                    maximumTrackTintColor={colors.onSurfaceVariant}
+                    thumbTintColor={colors.primary}
+                    step={1}
+                    value={iso}
+                    onValueChange={setiso}
+                  />
+                </List.Section>
+                <List.Section>
+                  <List.Item
+                    title="Exposure"
+                    right={() => <Text>{exposure}</Text>}
+                  />
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={10}
+                    minimumTrackTintColor={colors.outline}
+                    maximumTrackTintColor={colors.onSurfaceVariant}
+                    thumbTintColor={colors.primary}
+                    step={1}
+                    value={exposure}
+                    onValueChange={setexposure}
+                  />
+                </List.Section>
+              </>
+            ) : (
+              <IconButton
+                size={40}
+                icon="home"
+                onPress={() => router.navigate("preview")}
               />
-            </List.Section>
-            <List.Section>
-              <List.Item
-                title="Exposure"
-                right={() => <Text>{exposure}</Text>}
-              />
-              <Slider
-                minimumValue={0}
-                maximumValue={10}
-                minimumTrackTintColor={colors.outline}
-                maximumTrackTintColor={colors.onSurfaceVariant}
-                thumbTintColor={colors.primary}
-                step={1}
-                value={exposure}
-                onValueChange={setexposure}
-              />
-            </List.Section>
+            )}
             <List.Section>
               <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
               <Slider
@@ -219,18 +243,10 @@ export default function index() {
             </List.Section>
           </View>
           <View className="flex-row items-center justify-evenly py-4">
-            <Pressable
-              onPress={() =>
-                imageUri &&
-                router.navigate({
-                  pathname: `preview/[imageUri]`,
-                  params: { imageUri },
-                })
-              }
-            >
+            <Pressable onPress={() => router.navigate("preview")}>
               <Image
                 source={{
-                  uri: imageUri ? imageUri : "../../assets/splash.png",
+                  uri: lastCapturedUri,
                 }}
                 className="w-16 h-16 rounded-full"
               />
@@ -264,10 +280,10 @@ export default function index() {
           <Dialog.ScrollArea>
             <ScrollView>
               <RadioButton.Group
-                value={pictureSize}
-                onValueChange={(value) => setpictureSize(value)}
+                value={videoQuality}
+                onValueChange={(value) => setvideoQuality(value)}
               >
-                {pictureSizes.map((item) => (
+                {videoQualities.map((item) => (
                   <RadioButton.Item
                     key={item.toString()}
                     label={item}

@@ -8,10 +8,7 @@ export default function VideoPreview({ videoUri }) {
   const ref = useRef(null);
   const [isplaying, setisPlaying] = useState<boolean>(true);
 
-  const player = useVideoPlayer(videoUri, (player) => {
-    player.loop = true;
-    player.play();
-  });
+  const player = useVideoPlayer(videoUri, (player) => {});
 
   const handleFullscreen = () => {
     if (!isfullscreen) {
@@ -32,12 +29,14 @@ export default function VideoPreview({ videoUri }) {
   }, [player]);
 
   return (
-    <VideoView
-      ref={ref}
-      player={player}
-      allowsFullscreen
-      contentFit="contain"
-      className="w-full h-full"
-    />
+    <View className="w-screen h-screen items-center justify-center">
+      <VideoView
+        ref={ref}
+        player={player}
+        allowsFullscreen
+        contentFit="contain"
+        className="w-[95vw] h-[95vw] absolute -z-10"
+      />
+    </View>
   );
 }
