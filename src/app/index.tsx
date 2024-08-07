@@ -54,19 +54,6 @@ export default function index() {
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
-  async function ensureDirExists() {
-    const imagesDirInfo = await FileSystem.getInfoAsync(imagesDir);
-    const videosDirInfo = await FileSystem.getInfoAsync(videosDir);
-    if (!imagesDirInfo) {
-      console.log("images directories does not exists, creating...");
-      await FileSystem.makeDirectoryAsync(imagesDir);
-    }
-    if (!videosDirInfo) {
-      console.log("videos directories does not exists, creating...");
-      await FileSystem.makeDirectoryAsync(videosDir);
-    }
-  }
-
   useEffect(() => {
     camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
   }, [camera]);
@@ -108,6 +95,9 @@ export default function index() {
         skipProcessing: true,
       });
       setimageUri(data?.uri);
+      if (data) {
+        addImage(data.uri);
+      }
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
@@ -115,6 +105,9 @@ export default function index() {
           maxDuration: exposure !== 0 ? exposure : undefined,
         });
         setimageUri(data?.uri);
+        if (data) {
+          addVideo(data.uri);
+        }
       } else {
         setisrecording(false);
         camera?.stopRecording();
@@ -122,12 +115,30 @@ export default function index() {
     }
   }
 
-  const imagesDir = FileSystem.documentDirectory + "images";
-  const videosDir = FileSystem.documentDirectory + "videos";
+  async function addImage(imageUri: string) {
+    const imagesDir = "AstroCam/images";
+    const asset = await MediaLibrary.createAssetAsync(imageUri);
+    const album = await MediaLibrary.getAlbumAsync(imagesDir);
+    if (!album) {
+      console.log("images directories does not exists, creating...");
+      await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
+    } else {
+      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+    }
+  }
+  async function addVideo(videoUri: string) {
+    const videosDir = "AstroCam/videos";
+    const asset = await MediaLibrary.createAssetAsync(videoUri);
+    const album = await MediaLibrary.getAlbumAsync(videosDir);
+    if (!album) {
+      console.log("images directories does not exists, creating...");
+      await MediaLibrary.createAlbumAsync(videosDir, asset, false);
+    } else {
+      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+    }
+  }
 
-  const handleSave = async () => {
-    const imagesAlbum = await MediaLibrary.getAlbumsAsync("AstroCam");
-  };
+  const handleSave = async () => {};
 
   return (
     <>
