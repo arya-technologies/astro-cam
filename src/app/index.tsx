@@ -8,6 +8,7 @@ import {
   CameraView,
   ImageType,
   useCameraPermissions,
+  VideoQuality,
 } from "expo-camera";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -51,6 +52,7 @@ export default function index() {
   const [iso, setiso] = useState<number>(0);
   const [exposure, setexposure] = useState<number>(0);
   const [zoom, setzoom] = useState<number>(0);
+  const [videoQuality, setvideoQuality] = useState<VideoQuality>("1080p");
 
   const [imageUri, setimageUri] = useState<string | undefined>();
 
@@ -58,28 +60,10 @@ export default function index() {
     camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
   }, [camera]);
 
-  if (!permission) {
-    return <View />;
-  }
-
   const requestPermissions = () => {
     requestPermission();
     requestMediaPermission();
   };
-
-  if (!permission.granted && !mediaPermission?.granted) {
-    return (
-      <View
-        className="h-full flex-1 items-center justify-center space-y-4"
-        style={{ backgroundColor: colors.surface }}
-      >
-        <Text>We need your permission to show the camera</Text>
-        <Button onPress={requestPermissions} mode="elevated">
-          Grant Permission
-        </Button>
-      </View>
-    );
-  }
 
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
@@ -140,6 +124,24 @@ export default function index() {
 
   const handleSave = async () => {};
 
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted && !mediaPermission?.granted) {
+    return (
+      <View
+        className="h-full flex-1 items-center justify-center space-y-4"
+        style={{ backgroundColor: colors.surface }}
+      >
+        <Text>We need your permission to show the camera</Text>
+        <Button onPress={requestPermissions} mode="elevated">
+          Grant Permission
+        </Button>
+      </View>
+    );
+  }
+
   return (
     <>
       <View
@@ -152,13 +154,14 @@ export default function index() {
       >
         <View style={{}} className="items-center">
           <CameraView
-            ref={(ref) => setcamera(ref)}
-            videoStabilizationMode="off"
+            mute
+            mode={mode}
+            zoom={zoom}
             facing="back"
             pictureSize={pictureSize}
-            mode={mode}
-            mute
-            zoom={zoom}
+            videoQuality={videoQuality}
+            videoStabilizationMode="off"
+            ref={(ref) => setcamera(ref)}
             className="w-[95vw] h-[95vw] my-[5vw]"
           />
         </View>
