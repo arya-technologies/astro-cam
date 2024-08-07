@@ -168,6 +168,11 @@ export default function index() {
         <View className="flex-grow">
           <View className="flex-1 flex-grow justify-evenly">
             <List.Section>
+              <List.Accordion title="Quality">
+                <List.Item title="1080p" />
+              </List.Accordion>
+            </List.Section>
+            <List.Section>
               <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
               <Slider
                 minimumValue={0}
