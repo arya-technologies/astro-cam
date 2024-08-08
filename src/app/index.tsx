@@ -201,78 +201,89 @@ export default function index() {
           </Camera>
         </View>
         <View className="flex-grow">
-          <View className="flex-1 flex-grow justify-end">
-            {mode === "video" ? (
-              <>
-                <List.Section>
-                  <List.Item
-                    title="Quality"
-                    right={() => <Text>{videoQuality}</Text>}
+          <View className="flex-row flex-grow">
+            <View className="items-center justify-end flex-grow p-2 space-y-2">
+              {mode === "video" ? (
+                <>
+                  <IconButton
+                    icon="home"
+                    mode="contained"
                     onPress={showResDialog}
                   />
-                </List.Section>
-              </>
-            ) : (
-              <></>
-            )}
-            <List.Section>
-              <List.Item
-                title="AutoFocus"
-                right={() => (
-                  <Switch
-                    value={autoFocus}
-                    onChange={() => setautoFocus(!autoFocus)}
-                  />
-                )}
-              />
-              {!autoFocus && (
-                <>
-                  <List.Item
-                    title="Focus"
-                    right={() => <Text>{focusDepth}</Text>}
-                  />
-                  <Slider
-                    minimumValue={0}
-                    maximumValue={1}
-                    minimumTrackTintColor={colors.outline}
-                    maximumTrackTintColor={colors.onSurfaceVariant}
-                    thumbTintColor={colors.primary}
-                    step={0.1}
-                    value={focusDepth}
-                    onValueChange={setfocusDepth}
-                  />
                 </>
+              ) : (
+                <></>
               )}
-            </List.Section>
-            <List.Section>
-              <List.Item
-                title="White Balance"
-                right={() => <Text>{whiteBalance}</Text>}
+              <IconButton
+                icon="aperture-outline"
+                mode="outlined"
+                selected={!autoFocus}
+                onPress={() => setautoFocus(!autoFocus)}
               />
-              <Slider
-                minimumValue={0}
-                maximumValue={1}
-                minimumTrackTintColor={colors.outline}
-                maximumTrackTintColor={colors.onSurfaceVariant}
-                thumbTintColor={colors.primary}
-                step={0.1}
-                value={whiteBalance}
-                onValueChange={setwhiteBalance}
+              <IconButton
+                icon="settings"
+                mode="contained"
+                onPress={() => router.navigate("settings")}
               />
-            </List.Section>
-            <List.Section>
-              <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
-              <Slider
-                minimumValue={0}
-                maximumValue={1}
-                minimumTrackTintColor={colors.outline}
-                maximumTrackTintColor={colors.onSurfaceVariant}
-                thumbTintColor={colors.primary}
-                step={0.1}
-                value={zoom}
-                onValueChange={setzoom}
-              />
-            </List.Section>
+            </View>
+            <View className="flex-grow justify-end">
+              <List.Section>
+                {!autoFocus && (
+                  <>
+                    <List.Item
+                      title="Focus"
+                      right={() => (
+                        <Text>{(focusDepth * 10).toPrecision(2)}</Text>
+                      )}
+                    />
+                    <Slider
+                      minimumValue={0}
+                      maximumValue={1}
+                      minimumTrackTintColor={colors.outline}
+                      maximumTrackTintColor={colors.onSurfaceVariant}
+                      thumbTintColor={colors.primary}
+                      step={0.1}
+                      value={focusDepth}
+                      onValueChange={setfocusDepth}
+                    />
+                  </>
+                )}
+              </List.Section>
+              <List.Section>
+                <List.Item
+                  title="White Balance"
+                  right={() => (
+                    <Text>{(whiteBalance * 10).toPrecision(2)}</Text>
+                  )}
+                />
+                <Slider
+                  minimumValue={0}
+                  maximumValue={1}
+                  minimumTrackTintColor={colors.outline}
+                  maximumTrackTintColor={colors.onSurfaceVariant}
+                  thumbTintColor={colors.primary}
+                  step={0.1}
+                  value={whiteBalance}
+                  onValueChange={setwhiteBalance}
+                />
+              </List.Section>
+              <List.Section>
+                <List.Item
+                  title="Zoom"
+                  right={() => <Text>{(zoom * 10).toPrecision(2)}</Text>}
+                />
+                <Slider
+                  minimumValue={0}
+                  maximumValue={1}
+                  minimumTrackTintColor={colors.outline}
+                  maximumTrackTintColor={colors.onSurfaceVariant}
+                  thumbTintColor={colors.primary}
+                  step={0.1}
+                  value={zoom}
+                  onValueChange={setzoom}
+                />
+              </List.Section>
+            </View>
           </View>
           <View className="flex-row items-center justify-evenly py-4">
             <Pressable onPress={() => router.navigate("preview")}>
