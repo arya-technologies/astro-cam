@@ -1,23 +1,15 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@react-native-community/slider";
 import {
-  CameraMode,
-  CameraView,
+  Camera,
+  CameraType,
   ImageType,
-  useCameraPermissions,
   VideoQuality,
-} from "expo-camera";
+} from "expo-camera/legacy";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Dimensions,
-  Image,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import {
   Button,
   Dialog,
@@ -25,6 +17,7 @@ import {
   List,
   Portal,
   RadioButton,
+  Switch,
   Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,8 +25,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
-  const { width, height } = Dimensions.get("window");
-  const [permission, requestPermission] = useCameraPermissions();
+  const [camera, setcamera] = useState<Camera | null>();
+  const [permission, requestPermission] = Camera.useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
 
@@ -41,24 +34,35 @@ export default function index() {
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
 
-  const [mode, setmode] = useState<CameraMode>("picture");
-  const [camera, setcamera] = useState<CameraView | null>();
+  const [mode, setmode] = useState<string>("picture");
+  const [focusDepth, setfocusDepth] = useState<number>(0);
   const [pictureSize, setpictureSize] = useState<string>("3000x3000");
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [imageType, setimageType] = useState<ImageType>("png");
-  const [isrecording, setisrecording] = useState<boolean>(false);
-  const [iso, setiso] = useState<number>(0);
-  const [exposure, setexposure] = useState<number>(0);
   const [zoom, setzoom] = useState<number>(0);
-  const [videoQuality, setvideoQuality] = useState<VideoQuality>("480p");
+  const [whiteBalance, setwhiteBalance] = useState<number>(0);
+  const [ratio, setratio] = useState<string>("1:1");
+  const [imageType, setimageType] = useState<ImageType>(ImageType.png);
+  const [videoQuality, setvideoQuality] = useState<VideoQuality>(
+    VideoQuality["480p"],
+  );
+  const [autoFocus, setautoFocus] = useState<boolean>(false);
+  // const [videoQualities, setvideoQualities] = useState<string[]>([
+  //   "480p",
+  //   "720p",
+  //   "1080p",
+  //   "2160p",
+  // ]);
+  const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
+    VideoQuality["480p"],
+    VideoQuality["720p"],
+    VideoQuality["1080p"],
+    VideoQuality["2160p"],
+  ]);
 
-  const [imageUri, setimageUri] = useState<string | undefined>();
-
-  const videoQualities: VideoQuality[] = ["480p", "720p", "1080p", "2160p"];
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
+  const [isrecording, setisrecording] = useState<boolean>(false);
 
   useEffect(() => {
-    // camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
     (async function () {
       const album = await MediaLibrary.getAlbumAsync("AstroCam");
       const albumAssets = await MediaLibrary.getAssetsAsync({
@@ -69,6 +73,18 @@ export default function index() {
       if (albumAssets) {
         setlastCapturedUri(albumAssets.assets[0]?.uri);
       }
+
+      const pictureSizesRes =
+        await camera?.getAvailablePictureSizesAsync(ratio);
+      if (pictureSizesRes) {
+        setpictureSizes(pictureSizesRes);
+      }
+
+      // const videoQualitiesRes =
+      //   await camera?.get(ratio);
+      // if (videoQualitiesRes) {
+      //   setvideoQualities(videoQualitiesRes);
+      // }
     })();
   }, [camera]);
 
@@ -83,16 +99,16 @@ export default function index() {
 
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    setiso(0);
-    setexposure(0);
-    setzoom(0);
+    // setiso(0);
+    // setexposure(0);
+    // setzoom(0);
   }
   async function handleCapture() {
     if (mode === "picture") {
       const data = await camera?.takePictureAsync({
-        imageType,
-        quality: 1,
-        skipProcessing: true,
+        // imageType,
+        // quality: 1,
+        // skipProcessing: true,
       });
       setlastCapturedUri(data?.uri);
       if (data) {
@@ -101,9 +117,7 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        const data = await camera?.recordAsync({
-          maxDuration: exposure !== 0 ? exposure : undefined,
-        });
+        const data = await camera?.recordAsync({ quality: videoQuality });
         setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
@@ -167,18 +181,21 @@ export default function index() {
           paddingBottom: bottom,
         }}
       >
-        <View style={{}} className="items-center">
-          <CameraView
-            mute
-            mode={mode}
-            zoom={zoom}
-            facing="back"
+        <View style={{}} className="">
+          <Camera
+            useCamera2Api
+            focusDepth={focusDepth}
             pictureSize={pictureSize}
-            videoQuality={videoQuality}
-            videoStabilizationMode="off"
+            autoFocus={autoFocus}
+            ratio={ratio}
+            zoom={zoom}
+            whiteBalance={whiteBalance}
+            focusable
             ref={(ref) => setcamera(ref)}
-            className="w-[95vw] h-[95vw] my-[5vw]"
-          />
+            type={CameraType.back}
+          >
+            <View className="w-[95vw] h-[95vw] my-[5vw]"></View>
+          </Camera>
         </View>
         <View className="flex-grow">
           <View className="flex-1 flex-grow justify-end">
@@ -191,43 +208,59 @@ export default function index() {
                     onPress={showResDialog}
                   />
                 </List.Section>
-                <List.Section>
-                  <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
-                  <Slider
-                    minimumValue={0}
-                    maximumValue={10}
-                    minimumTrackTintColor={colors.outline}
-                    maximumTrackTintColor={colors.onSurfaceVariant}
-                    thumbTintColor={colors.primary}
-                    step={1}
-                    value={iso}
-                    onValueChange={setiso}
-                  />
-                </List.Section>
-                <List.Section>
-                  <List.Item
-                    title="Exposure"
-                    right={() => <Text>{exposure}</Text>}
-                  />
-                  <Slider
-                    minimumValue={0}
-                    maximumValue={10}
-                    minimumTrackTintColor={colors.outline}
-                    maximumTrackTintColor={colors.onSurfaceVariant}
-                    thumbTintColor={colors.primary}
-                    step={1}
-                    value={exposure}
-                    onValueChange={setexposure}
-                  />
-                </List.Section>
               </>
             ) : (
-              <IconButton
-                size={40}
-                icon="home"
-                onPress={() => router.navigate("preview")}
-              />
+              <>
+                <IconButton
+                  size={40}
+                  icon="home"
+                  onPress={() => router.navigate("lagacy")}
+                />
+              </>
             )}
+            <List.Section>
+              <List.Item
+                title="AutoFocus"
+                right={() => (
+                  <Switch
+                    value={autoFocus}
+                    onChange={() => setautoFocus(!autoFocus)}
+                  />
+                )}
+              />
+            </List.Section>
+            <List.Section>
+              <List.Item
+                title="Focus Depth"
+                right={() => <Text>{focusDepth}</Text>}
+              />
+              <Slider
+                minimumValue={0}
+                maximumValue={1}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
+                step={0.1}
+                value={focusDepth}
+                onValueChange={setfocusDepth}
+              />
+            </List.Section>
+            <List.Section>
+              <List.Item
+                title="White Balance"
+                right={() => <Text>{whiteBalance}</Text>}
+              />
+              <Slider
+                minimumValue={0}
+                maximumValue={1}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
+                step={0.1}
+                value={whiteBalance}
+                onValueChange={setwhiteBalance}
+              />
+            </List.Section>
             <List.Section>
               <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
               <Slider
@@ -271,28 +304,22 @@ export default function index() {
         </View>
       </View>
       <Portal>
-        <Dialog
-          visible={isResDialogVisible}
-          onDismiss={hideResDialog}
-          style={{ maxHeight: "75%" }}
-        >
+        <Dialog visible={isResDialogVisible} onDismiss={hideResDialog}>
           <Dialog.Title>Resolution</Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
-              <RadioButton.Group
-                value={videoQuality}
-                onValueChange={(value) => setvideoQuality(value)}
-              >
-                {videoQualities.map((item) => (
-                  <RadioButton.Item
-                    key={item.toString()}
-                    label={item}
-                    value={item}
-                  />
-                ))}
-              </RadioButton.Group>
-            </ScrollView>
-          </Dialog.ScrollArea>
+          <Dialog.Content>
+            <RadioButton.Group
+              value={videoQuality}
+              onValueChange={(value) => setvideoQuality(value)}
+            >
+              {videoQualities.map((item) => (
+                <RadioButton.Item
+                  key={item.toString()}
+                  label={item}
+                  value={item}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={hideResDialog}>Cancel</Button>
           </Dialog.Actions>

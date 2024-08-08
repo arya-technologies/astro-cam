@@ -27,7 +27,6 @@ export default function Layout() {
               animation: "default",
               headerShown: false,
             }}
-            initialRouteName="/"
           />
         </Material3ThemeProvider>
       </PersistGate>

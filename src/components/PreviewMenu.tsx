@@ -30,7 +30,6 @@ export default function PreviewMenu({ asset }: PreviewMenuProps) {
     (async function () {
       const result = await MediaLibrary.getAssetInfoAsync(asset);
       setassetInfo(result);
-      console.log(result);
     })();
   }, [asset]);
 
@@ -84,24 +83,29 @@ export default function PreviewMenu({ asset }: PreviewMenuProps) {
               description={assetInfo?.localUri}
               right={() => <CopyToClipButton url={assetInfo?.localUri} />}
             />
-            <List.Item
-              title="Latitude"
-              description={assetInfo?.location?.latitude}
-              right={() => (
-                <CopyToClipButton
-                  string={assetInfo?.location?.latitude.toString()}
+            {assetInfo?.location && (
+              <List.Section>
+                <List.Subheader>Location</List.Subheader>
+                <List.Item
+                  title="Latitude"
+                  description={assetInfo?.location?.latitude}
+                  right={() => (
+                    <CopyToClipButton
+                      string={assetInfo?.location?.latitude.toString()}
+                    />
+                  )}
                 />
-              )}
-            />
-            <List.Item
-              title="Longitude"
-              description={assetInfo?.location?.longitude}
-              right={() => (
-                <CopyToClipButton
-                  string={assetInfo?.location?.longitude.toString()}
+                <List.Item
+                  title="Longitude"
+                  description={assetInfo?.location?.longitude}
+                  right={() => (
+                    <CopyToClipButton
+                      string={assetInfo?.location?.longitude.toString()}
+                    />
+                  )}
                 />
-              )}
-            />
+              </List.Section>
+            )}
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={hideInfo}>Cancel</Button>
