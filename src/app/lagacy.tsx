@@ -13,7 +13,6 @@ import {
   Dimensions,
   Image,
   Pressable,
-  ScrollView,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -24,6 +23,7 @@ import {
   List,
   Portal,
   RadioButton,
+  Switch,
   Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -52,7 +52,19 @@ export default function index() {
   const [videoQuality, setvideoQuality] = useState<VideoQuality>(
     VideoQuality["480p"],
   );
-  const [videoQualities, setvideoQualities] = useState<VideoQuality>();
+  const [autoFocus, setautoFocus] = useState<boolean>(false);
+  // const [videoQualities, setvideoQualities] = useState<string[]>([
+  //   "480p",
+  //   "720p",
+  //   "1080p",
+  //   "2160p",
+  // ]);
+  const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
+    VideoQuality["480p"],
+    VideoQuality["720p"],
+    VideoQuality["1080p"],
+    VideoQuality["2160p"],
+  ]);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -93,7 +105,7 @@ export default function index() {
   };
 
   function toggleCameraMode() {
-    // setmode((current) => (current === "picture" ? "video" : "picture"));
+    setmode((current) => (current === "picture" ? "video" : "picture"));
     // setiso(0);
     // setexposure(0);
     // setzoom(0);
@@ -112,7 +124,7 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        const data = await camera?.recordAsync({});
+        const data = await camera?.recordAsync({ quality: videoQuality });
         setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
@@ -180,6 +192,7 @@ export default function index() {
           <Camera
             focusDepth={focusDepth}
             pictureSize={pictureSize}
+            autoFocus={autoFocus}
             ratio={ratio}
             useCamera2Api
             zoom={zoom}
@@ -201,43 +214,59 @@ export default function index() {
                     onPress={showResDialog}
                   />
                 </List.Section>
-                <List.Section>
-                  <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
-                  <Slider
-                    minimumValue={0}
-                    maximumValue={10}
-                    minimumTrackTintColor={colors.outline}
-                    maximumTrackTintColor={colors.onSurfaceVariant}
-                    thumbTintColor={colors.primary}
-                    step={1}
-                    value={iso}
-                    onValueChange={setiso}
-                  />
-                </List.Section>
-                <List.Section>
-                  <List.Item
-                    title="Exposure"
-                    right={() => <Text>{exposure}</Text>}
-                  />
-                  <Slider
-                    minimumValue={0}
-                    maximumValue={10}
-                    minimumTrackTintColor={colors.outline}
-                    maximumTrackTintColor={colors.onSurfaceVariant}
-                    thumbTintColor={colors.primary}
-                    step={1}
-                    value={exposure}
-                    onValueChange={setexposure}
-                  />
-                </List.Section>
               </>
             ) : (
-              <IconButton
-                size={40}
-                icon="home"
-                onPress={() => router.navigate("preview")}
-              />
+              <>
+                <IconButton
+                  size={40}
+                  icon="home"
+                  onPress={() => router.navigate("lagacy")}
+                />
+              </>
             )}
+            <List.Section>
+              <List.Item
+                title="AutoFocus"
+                right={() => (
+                  <Switch
+                    value={autoFocus}
+                    onChange={() => setautoFocus(!autoFocus)}
+                  />
+                )}
+              />
+            </List.Section>
+            <List.Section>
+              <List.Item
+                title="Focus Depth"
+                right={() => <Text>{focusDepth}</Text>}
+              />
+              <Slider
+                minimumValue={0}
+                maximumValue={10}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
+                step={1}
+                value={focusDepth}
+                onValueChange={setfocusDepth}
+              />
+            </List.Section>
+            <List.Section>
+              <List.Item
+                title="White Balance"
+                right={() => <Text>{whiteBalance}</Text>}
+              />
+              <Slider
+                minimumValue={0}
+                maximumValue={10}
+                minimumTrackTintColor={colors.outline}
+                maximumTrackTintColor={colors.onSurfaceVariant}
+                thumbTintColor={colors.primary}
+                step={1}
+                value={whiteBalance}
+                onValueChange={setwhiteBalance}
+              />
+            </List.Section>
             <List.Section>
               <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
               <Slider
@@ -281,28 +310,22 @@ export default function index() {
         </View>
       </View>
       <Portal>
-        <Dialog
-          visible={isResDialogVisible}
-          onDismiss={hideResDialog}
-          style={{ maxHeight: "75%" }}
-        >
+        <Dialog visible={isResDialogVisible} onDismiss={hideResDialog}>
           <Dialog.Title>Resolution</Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
-              <RadioButton.Group
-                value={videoQuality}
-                onValueChange={(value) => setvideoQuality(value)}
-              >
-                {videoQualities.map((item) => (
-                  <RadioButton.Item
-                    key={item.toString()}
-                    label={item}
-                    value={item}
-                  />
-                ))}
-              </RadioButton.Group>
-            </ScrollView>
-          </Dialog.ScrollArea>
+          <Dialog.Content>
+            <RadioButton.Group
+              value={videoQuality}
+              onValueChange={(value) => setvideoQuality(value)}
+            >
+              {videoQualities.map((item) => (
+                <RadioButton.Item
+                  key={item.toString()}
+                  label={item}
+                  value={item}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={hideResDialog}>Cancel</Button>
           </Dialog.Actions>
