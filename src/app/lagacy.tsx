@@ -1,6 +1,11 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@react-native-community/slider";
-import { Camera, CameraType } from "expo-camera/legacy";
+import {
+  Camera,
+  CameraType,
+  ImageType,
+  VideoQuality,
+} from "expo-camera/legacy";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -27,7 +32,7 @@ export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
   const { width, height } = Dimensions.get("window");
-  const [camera, setcamera] = useState<Camera>();
+  const [camera, setcamera] = useState<Camera | null>();
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
@@ -36,12 +41,23 @@ export default function index() {
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
 
+  const [mode, setmode] = useState<string>("picture");
   const [focusDepth, setfocusDepth] = useState<number>(0);
+  const [pictureSize, setpictureSize] = useState<string>("3000x3000");
+  const [pictureSizes, setpictureSizes] = useState<string[]>([]);
+  const [zoom, setzoom] = useState<number>(0);
+  const [whiteBalance, setwhiteBalance] = useState<number>(0);
+  const [ratio, setratio] = useState<string>("1:1");
+  const [imageType, setimageType] = useState<ImageType>(ImageType.png);
+  const [videoQuality, setvideoQuality] = useState<VideoQuality>(
+    VideoQuality["480p"],
+  );
+  const [videoQualities, setvideoQualities] = useState<VideoQuality>();
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
+  const [isrecording, setisrecording] = useState<boolean>(false);
 
   useEffect(() => {
-    // camera?.getAvailablePictureSizesAsync().then((res) => setpictureSizes(res));
     (async function () {
       const album = await MediaLibrary.getAlbumAsync("AstroCam");
       const albumAssets = await MediaLibrary.getAssetsAsync({
@@ -52,6 +68,18 @@ export default function index() {
       if (albumAssets) {
         setlastCapturedUri(albumAssets.assets[0]?.uri);
       }
+
+      const pictureSizesRes =
+        await camera?.getAvailablePictureSizesAsync(ratio);
+      if (pictureSizesRes) {
+        setpictureSizes(pictureSizesRes);
+      }
+
+      // const videoQualitiesRes =
+      //   await camera?.get(ratio);
+      // if (videoQualitiesRes) {
+      //   setvideoQualities(videoQualitiesRes);
+      // }
     })();
   }, [camera]);
 
@@ -65,10 +93,10 @@ export default function index() {
   };
 
   function toggleCameraMode() {
-    setmode((current) => (current === "picture" ? "video" : "picture"));
-    setiso(0);
-    setexposure(0);
-    setzoom(0);
+    // setmode((current) => (current === "picture" ? "video" : "picture"));
+    // setiso(0);
+    // setexposure(0);
+    // setzoom(0);
   }
   async function handleCapture() {
     if (mode === "picture") {
@@ -84,9 +112,7 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        const data = await camera?.recordAsync({
-          maxDuration: exposure !== 0 ? exposure : undefined,
-        });
+        const data = await camera?.recordAsync({});
         setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
@@ -151,7 +177,18 @@ export default function index() {
         }}
       >
         <View style={{}} className="items-center">
-          <Camera />
+          <Camera
+            focusDepth={focusDepth}
+            pictureSize={pictureSize}
+            ratio={ratio}
+            useCamera2Api
+            zoom={zoom}
+            whiteBalance={whiteBalance}
+            type={CameraType.back}
+            focusable
+            ref={(ref) => setcamera(ref)}
+            className="w-[95vw] h-[95vw] my-[5vw]"
+          />
         </View>
         <View className="flex-grow">
           <View className="flex-1 flex-grow justify-end">
