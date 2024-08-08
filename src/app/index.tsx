@@ -117,7 +117,10 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        const data = await camera?.recordAsync({ quality: videoQuality });
+        const data = await camera?.recordAsync({
+          mute: true,
+          quality: videoQuality,
+        });
         setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
@@ -181,7 +184,7 @@ export default function index() {
           paddingBottom: bottom,
         }}
       >
-        <View style={{}} className="">
+        <View style={{}} className="flex-1 items-center py-4">
           <Camera
             useCamera2Api
             focusDepth={focusDepth}
@@ -194,7 +197,7 @@ export default function index() {
             ref={(ref) => setcamera(ref)}
             type={CameraType.back}
           >
-            <View className="w-[95vw] h-[95vw] my-[5vw]"></View>
+            <View className="w-[95vw] h-[95vw]"></View>
           </Camera>
         </View>
         <View className="flex-grow">
@@ -210,13 +213,7 @@ export default function index() {
                 </List.Section>
               </>
             ) : (
-              <>
-                <IconButton
-                  size={40}
-                  icon="home"
-                  onPress={() => router.navigate("lagacy")}
-                />
-              </>
+              <></>
             )}
             <List.Section>
               <List.Item
@@ -228,22 +225,24 @@ export default function index() {
                   />
                 )}
               />
-            </List.Section>
-            <List.Section>
-              <List.Item
-                title="Focus Depth"
-                right={() => <Text>{focusDepth}</Text>}
-              />
-              <Slider
-                minimumValue={0}
-                maximumValue={1}
-                minimumTrackTintColor={colors.outline}
-                maximumTrackTintColor={colors.onSurfaceVariant}
-                thumbTintColor={colors.primary}
-                step={0.1}
-                value={focusDepth}
-                onValueChange={setfocusDepth}
-              />
+              {!autoFocus && (
+                <>
+                  <List.Item
+                    title="Focus"
+                    right={() => <Text>{focusDepth}</Text>}
+                  />
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={1}
+                    minimumTrackTintColor={colors.outline}
+                    maximumTrackTintColor={colors.onSurfaceVariant}
+                    thumbTintColor={colors.primary}
+                    step={0.1}
+                    value={focusDepth}
+                    onValueChange={setfocusDepth}
+                  />
+                </>
+              )}
             </List.Section>
             <List.Section>
               <List.Item
