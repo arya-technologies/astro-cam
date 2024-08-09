@@ -17,7 +17,6 @@ import {
   List,
   Portal,
   RadioButton,
-  Switch,
   Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -34,6 +33,11 @@ export default function index() {
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
 
+  const [isImageTypesDialogVisible, setisImageTypesDialogVisible] =
+    useState<boolean>(false);
+  const showImageTypesDialog = () => setisImageTypesDialogVisible(true);
+  const hideImageTypesDialog = () => setisImageTypesDialogVisible(false);
+
   const [mode, setmode] = useState<string>("picture");
   const [focusDepth, setfocusDepth] = useState<number>(0);
   const [pictureSize, setpictureSize] = useState<string>("3000x3000");
@@ -46,12 +50,11 @@ export default function index() {
     VideoQuality["480p"],
   );
   const [autoFocus, setautoFocus] = useState<boolean>(false);
-  // const [videoQualities, setvideoQualities] = useState<string[]>([
-  //   "480p",
-  //   "720p",
-  //   "1080p",
-  //   "2160p",
-  // ]);
+
+  const [imageTypes, setimageTyped] = useState<ImageType[]>([
+    ImageType.jpg,
+    ImageType.png,
+  ]);
   const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
     VideoQuality["480p"],
     VideoQuality["720p"],
@@ -79,12 +82,6 @@ export default function index() {
       if (pictureSizesRes) {
         setpictureSizes(pictureSizesRes);
       }
-
-      // const videoQualitiesRes =
-      //   await camera?.get(ratio);
-      // if (videoQualitiesRes) {
-      //   setvideoQualities(videoQualitiesRes);
-      // }
     })();
   }, [camera]);
 
@@ -99,16 +96,13 @@ export default function index() {
 
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    // setiso(0);
-    // setexposure(0);
-    // setzoom(0);
   }
   async function handleCapture() {
     if (mode === "picture") {
       const data = await camera?.takePictureAsync({
-        // imageType,
-        // quality: 1,
-        // skipProcessing: true,
+        imageType,
+        quality: 1,
+        skipProcessing: true,
       });
       setlastCapturedUri(data?.uri);
       if (data) {
@@ -212,7 +206,13 @@ export default function index() {
                   />
                 </>
               ) : (
-                <></>
+                <>
+                  <IconButton
+                    icon="image"
+                    mode="contained"
+                    onPress={showImageTypesDialog}
+                  />
+                </>
               )}
               <IconButton
                 icon="aperture-outline"
@@ -322,6 +322,31 @@ export default function index() {
               onValueChange={(value) => setvideoQuality(value)}
             >
               {videoQualities.map((item) => (
+                <RadioButton.Item
+                  key={item.toString()}
+                  label={item}
+                  value={item}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hideResDialog}>Cancel</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+      <Portal>
+        <Dialog
+          visible={isImageTypesDialogVisible}
+          onDismiss={hideImageTypesDialog}
+        >
+          <Dialog.Title>Image Types</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group
+              value={imageType}
+              onValueChange={(value) => setvideoQuality(value)}
+            >
+              {imageTypes.map((item) => (
                 <RadioButton.Item
                   key={item.toString()}
                   label={item}
