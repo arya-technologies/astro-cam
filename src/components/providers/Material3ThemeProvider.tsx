@@ -31,7 +31,9 @@ export function Material3ThemeProvider({
 }: ProviderProps & { sourceColor?: string; fallbackSourceColor?: string }) {
   const colorScheme = useColorScheme();
 
-  const themeMode = useSelector((state: RootState) => state.settings.theme);
+  const themeMode = useSelector(
+    (state: RootState) => state.settings.appearance.theme,
+  );
 
   const { theme, updateTheme, resetTheme } = useMaterial3Theme();
 
