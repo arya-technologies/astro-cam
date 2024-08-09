@@ -53,14 +53,12 @@ export const settingsSlice = createSlice({
       appearance.theme = payload.theme;
     },
     setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
-      controls = {
-        mode: payload.mode,
-        imageType: payload.imageType,
-        pictureSize: payload.pictureSize,
-        ratio: payload.ratio,
-        videoQuality: payload.videoQuality,
-        videoStabilization: payload.videoStabilization,
-      };
+      controls.mode = payload.mode;
+      controls.imageType = payload.imageType;
+      controls.pictureSize = payload.pictureSize;
+      controls.ratio = payload.ratio;
+      controls.videoQuality = payload.videoQuality;
+      controls.videoStabilization = payload.videoStabilization;
     },
   },
 });
