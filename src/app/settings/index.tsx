@@ -1,5 +1,5 @@
 import ScrollView from "@/components/ScrollView";
-import { setsettings, ThemeProps } from "@/features/slices/settingsSlice";
+import { setappearance, ThemeProps } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
 import React, { useEffect, useState } from "react";
 import { Button, Dialog, List, Portal, RadioButton } from "react-native-paper";
@@ -22,10 +22,8 @@ export default function Appearance() {
 
   useEffect(() => {
     dispatch(
-      setsettings({
-        appearance: {
-          theme,
-        },
+      setappearance({
+        theme,
       }),
     );
   }, [theme]);

@@ -1,25 +1,32 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { ImageType, VideoQuality } from "expo-camera/legacy";
+import {
+  CameraMode,
+  FocusMode,
+  ImageType,
+  VideoQuality,
+  VideoStabilization,
+} from "expo-camera";
 
 export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
-export type CameraModeProps = "picture" | "video";
 export type PictureSizeProps = "3000x3000";
 export type RatioProps = "1:1";
 
+export type AppearanceProps = {
+  theme: ThemeProps;
+};
+export type ControlsProps = {
+  mode: CameraMode;
+  pictureSize: PictureSizeProps;
+  ratio: RatioProps;
+  imageType: ImageType;
+  videoQuality: VideoQuality;
+  videoStabilization: VideoStabilization;
+};
+
 export interface SettingsProps {
-  appearance?: {
-    theme: ThemeProps;
-  };
-  controls?: {
-    mode: CameraModeProps;
-    autoFocus: boolean;
-    pictureSize: PictureSizeProps;
-    whiteBalance: number;
-    ratio: RatioProps;
-    imageType: ImageType;
-    videoQuality: VideoQuality;
-  };
+  appearance: AppearanceProps;
+  controls: ControlsProps;
 }
 
 const initialState: SettingsProps = {
@@ -28,12 +35,11 @@ const initialState: SettingsProps = {
   },
   controls: {
     mode: "picture",
-    autoFocus: false,
     pictureSize: "3000x3000",
-    whiteBalance: 0,
     ratio: "1:1",
-    imageType: ImageType.png,
-    videoQuality: VideoQuality["1080p"],
+    imageType: "png",
+    videoQuality: "1080p",
+    videoStabilization: "off",
   },
 };
 
@@ -41,32 +47,27 @@ export const settingsSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
-    setsettings: (
+    setappearance: (
       { appearance },
-      { payload }: PayloadAction<SettingsProps>,
+      { payload }: PayloadAction<AppearanceProps>,
     ) => {
-      if (payload.appearance) {
-        appearance = {
-          theme: payload.appearance.theme,
-        };
-      }
+      appearance = {
+        theme: payload.theme,
+      };
     },
-    setcontrols: ({ controls }, { payload }: PayloadAction<SettingsProps>) => {
-      if (payload.controls) {
-        controls = {
-          mode: payload.controls.mode,
-          autoFocus: payload.controls.autoFocus,
-          imageType: payload.controls.imageType,
-          pictureSize: payload.controls.pictureSize,
-          ratio: payload.controls.ratio,
-          videoQuality: payload.controls.videoQuality,
-          whiteBalance: payload.controls.whiteBalance,
-        };
-      }
+    setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
+      controls = {
+        mode: payload.mode,
+        imageType: payload.imageType,
+        pictureSize: payload.pictureSize,
+        ratio: payload.ratio,
+        videoQuality: payload.videoQuality,
+        videoStabilization: payload.videoStabilization,
+      };
     },
   },
 });
 
-export const { setsettings, setcontrols } = settingsSlice.actions;
+export const { setappearance, setcontrols } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -1,25 +1,22 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import { RootState } from "@/features/store";
 import Slider from "@/components/Slider";
 import {
-  CameraMode,
-  CameraView,
-  FocusMode,
+  CameraModeProps,
+  PictureSizeProps,
+  RatioProps,
+  setcontrols,
+} from "@/features/slices/settingsSlice";
+import { RootState } from "@/features/store";
+import {
+  Camera,
+  CameraType,
   ImageType,
   VideoQuality,
-  VideoStabilization,
-  useCameraPermissions,
-} from "expo-camera";
+} from "expo-camera/legacy";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import {
   Button,
   Dialog,
@@ -31,47 +28,53 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  PictureSizeProps,
-  RatioProps,
-  setcontrols,
-} from "@/features/slices/settingsSlice";
 
 export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
-  const dispatch = useDispatch();
-  const { controls } = useSelector((state: RootState) => state.settings);
-  const [permission, requestPermission] = useCameraPermissions();
+  const [camera, setcamera] = useState<Camera | null>();
+  const [permission, requestPermission] = Camera.useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
+  const dispatch = useDispatch();
+
+  const { controls } = useSelector((state: RootState) => state.settings);
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
-  const [isPictureTypesDialogVisible, setisPictureTypesDialogVisible] =
-    useState<boolean>(false);
-  const showPictureTypesDialog = () => setisPictureTypesDialogVisible(true);
-  const hidePictureTypesDialog = () => setisPictureTypesDialogVisible(false);
 
-  const [mode, setmode] = useState<CameraMode>(controls?.mode);
-  const [camera, setcamera] = useState<CameraView | null>();
+  const [isImageTypesDialogVisible, setisImageTypesDialogVisible] =
+    useState<boolean>(false);
+  const showImageTypesDialog = () => setisImageTypesDialogVisible(true);
+  const hideImageTypesDialog = () => setisImageTypesDialogVisible(false);
+
+  const [mode, setmode] = useState<CameraModeProps>(controls.mode);
+  const [focusDepth, setfocusDepth] = useState<number>(0);
   const [pictureSize, setpictureSize] = useState<PictureSizeProps>(
     controls.pictureSize,
   );
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [imageType, setimageType] = useState<ImageType>(controls.imageType);
-  const [imageTypes, setimageTypes] = useState<ImageType[]>(["png", "jpg"]);
-  const [iso, setiso] = useState<number>(0);
-  const [exposure, setexposure] = useState<number>(0);
   const [zoom, setzoom] = useState<number>(0);
+  const [whiteBalance, setwhiteBalance] = useState<number>(
+    controls.whiteBalance,
+  );
   const [ratio, setratio] = useState<RatioProps>(controls.ratio);
+  const [autoFocus, setautoFocus] = useState<boolean>(controls.autoFocus);
+  const [imageType, setimageType] = useState<ImageType>(controls.imageType);
+  const [imageTypes, setimageTypes] = useState<ImageType[]>([
+    ImageType.jpg,
+    ImageType.png,
+  ]);
   const [videoQuality, setvideoQuality] = useState<VideoQuality>(
     controls.videoQuality,
   );
-  const videoQualities: VideoQuality[] = ["480p", "720p", "1080p", "2160p"];
-  const [videoStabilization, setvideoStabilization] =
-    useState<VideoStabilization>(controls.videoStabilization);
+  const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
+    VideoQuality["480p"],
+    VideoQuality["720p"],
+    VideoQuality["1080p"],
+    VideoQuality["2160p"],
+  ]);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -79,16 +82,19 @@ export default function index() {
   useEffect(() => {
     (async function () {
       const album = await MediaLibrary.getAlbumAsync("AstroCam");
-      const albumAssets = await MediaLibrary.getAssetsAsync({
-        album,
-        mediaType: ["photo", "video"],
-        sortBy: "creationTime",
-      });
-      if (albumAssets) {
-        setlastCapturedUri(albumAssets.assets[0]?.uri);
+      if (album) {
+        const albumAssets = await MediaLibrary.getAssetsAsync({
+          album,
+          mediaType: ["photo", "video"],
+          sortBy: "creationTime",
+        });
+        if (albumAssets) {
+          setlastCapturedUri(albumAssets.assets[0]?.uri);
+        }
       }
 
-      const pictureSizesRes = await camera?.getAvailablePictureSizesAsync();
+      const pictureSizesRes =
+        await camera?.getAvailablePictureSizesAsync(ratio);
       if (pictureSizesRes) {
         setpictureSizes(pictureSizesRes);
       }
@@ -98,15 +104,26 @@ export default function index() {
   useEffect(() => {
     dispatch(
       setcontrols({
-        mode,
-        imageType,
-        pictureSize,
-        ratio,
-        videoQuality,
-        videoStabilization,
+        controls: {
+          mode,
+          autoFocus,
+          imageType,
+          pictureSize,
+          ratio,
+          videoQuality,
+          whiteBalance,
+        },
       }),
     );
-  }, [mode, imageType, pictureSize, ratio, videoQuality, videoStabilization]);
+  }, [
+    mode,
+    autoFocus,
+    imageType,
+    pictureSize,
+    ratio,
+    videoQuality,
+    whiteBalance,
+  ]);
 
   const requestPermissions = () => {
     if (!permission?.granted) {
@@ -119,14 +136,11 @@ export default function index() {
 
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    setiso(0);
-    setexposure(0);
-    setzoom(0);
   }
   async function handleCapture() {
     if (mode === "picture") {
       const data = await camera?.takePictureAsync({
-        imageType,
+        imageType: ImageType.png,
         quality: 1,
         skipProcessing: true,
       });
@@ -137,14 +151,17 @@ export default function index() {
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
-        const data = await camera?.recordAsync({});
+        const data = await camera?.recordAsync({
+          mute: true,
+          quality: videoQuality,
+        });
         setlastCapturedUri(data?.uri);
         if (data) {
           addVideo(data.uri);
         }
       } else {
-        camera?.stopRecording();
         setisrecording(false);
+        camera?.stopRecording();
       }
     }
   }
@@ -201,19 +218,21 @@ export default function index() {
           paddingBottom: bottom,
         }}
       >
-        <View style={{}} className="items-center">
-          <CameraView
-            mute
-            autofocus="on"
-            mode={mode}
-            zoom={zoom}
-            facing="back"
+        <View style={{}} className="flex-1 items-center py-4">
+          <Camera
+            useCamera2Api
+            focusDepth={focusDepth}
             pictureSize={pictureSize}
-            videoQuality={videoQuality}
-            videoStabilizationMode={videoStabilization}
+            autoFocus={autoFocus}
+            ratio={ratio}
+            zoom={zoom}
+            whiteBalance={whiteBalance}
+            focusable
             ref={(ref) => setcamera(ref)}
-            className="w-[95vw] h-[95vw] my-[5vw]"
-          />
+            type={CameraType.back}
+          >
+            <View className="w-[95vw] h-[95vw]"></View>
+          </Camera>
         </View>
         <View className="flex-grow">
           <View className="flex-row flex-grow">
@@ -231,10 +250,16 @@ export default function index() {
                   <IconButton
                     icon="image"
                     mode="contained"
-                    onPress={showPictureTypesDialog}
+                    onPress={showImageTypesDialog}
                   />
                 </>
               )}
+              <IconButton
+                icon="aperture-outline"
+                mode="outlined"
+                selected={autoFocus}
+                onPress={() => setautoFocus(!autoFocus)}
+              />
               <IconButton
                 icon="settings"
                 mode="contained"
@@ -242,6 +267,40 @@ export default function index() {
               />
             </View>
             <View className="flex-grow justify-end">
+              <List.Section>
+                {!autoFocus && (
+                  <>
+                    <List.Item
+                      title="Focus"
+                      right={() => (
+                        <Text>{(focusDepth * 10).toPrecision(2)}</Text>
+                      )}
+                    />
+                    <Slider
+                      minValue={0}
+                      maxValue={1}
+                      step={0.1}
+                      value={focusDepth}
+                      onValueChange={setfocusDepth}
+                    />
+                  </>
+                )}
+              </List.Section>
+              <List.Section>
+                <List.Item
+                  title="White Balance"
+                  right={() => (
+                    <Text>{(whiteBalance * 10).toPrecision(2)}</Text>
+                  )}
+                />
+                <Slider
+                  minValue={0}
+                  maxValue={1}
+                  step={0.1}
+                  value={whiteBalance}
+                  onValueChange={setwhiteBalance}
+                />
+              </List.Section>
               <List.Section>
                 <List.Item
                   title="Zoom"
@@ -295,7 +354,7 @@ export default function index() {
           <Dialog.Content>
             <RadioButton.Group
               value={videoQuality}
-              onValueChange={(value: VideoQuality) => setvideoQuality(value)}
+              onValueChange={(value) => setvideoQuality(value)}
             >
               {videoQualities.map((item) => (
                 <RadioButton.Item
@@ -313,14 +372,14 @@ export default function index() {
       </Portal>
       <Portal>
         <Dialog
-          visible={isPictureTypesDialogVisible}
-          onDismiss={hidePictureTypesDialog}
+          visible={isImageTypesDialogVisible}
+          onDismiss={hideImageTypesDialog}
         >
           <Dialog.Title>Image Types</Dialog.Title>
           <Dialog.Content>
             <RadioButton.Group
               value={imageType}
-              onValueChange={(value: ImageType) => setimageType(value)}
+              onValueChange={(value) => setimageType(value)}
             >
               {imageTypes.map((item) => (
                 <RadioButton.Item
@@ -332,7 +391,7 @@ export default function index() {
             </RadioButton.Group>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={hidePictureTypesDialog}>Cancel</Button>
+            <Button onPress={hideImageTypesDialog}>Cancel</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
