@@ -21,13 +21,15 @@ export default function preview() {
   useEffect(() => {
     (async function () {
       const album = await MediaLibrary.getAlbumAsync("AstroCam");
-      const albumAssets = await MediaLibrary.getAssetsAsync({
-        album,
-        mediaType: ["photo", "video"],
-        sortBy: "creationTime",
-      });
-      if (albumAssets) {
-        setassets(albumAssets.assets);
+      if (album) {
+        const albumAssets = await MediaLibrary.getAssetsAsync({
+          album,
+          mediaType: ["photo", "video"],
+          sortBy: "creationTime",
+        });
+        if (albumAssets) {
+          setassets(albumAssets.assets);
+        }
       }
     })();
   }, []);

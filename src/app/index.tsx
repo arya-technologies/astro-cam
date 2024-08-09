@@ -17,7 +17,13 @@ import {
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, Pressable, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Pressable,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   Button,
   Dialog,
@@ -71,19 +77,23 @@ export default function index() {
 
   useEffect(() => {
     (async function () {
-      const album = await MediaLibrary.getAlbumAsync("AstroCam");
-      const albumAssets = await MediaLibrary.getAssetsAsync({
-        album,
-        mediaType: ["photo", "video"],
-        sortBy: "creationTime",
-      });
-      if (albumAssets) {
-        setlastCapturedUri(albumAssets.assets[0]?.uri);
-      }
+      if (permission?.granted && mediaPermission?.granted) {
+        const album = await MediaLibrary.getAlbumAsync("AstroCam");
+        if (album) {
+          const albumAssets = await MediaLibrary.getAssetsAsync({
+            album,
+            mediaType: ["photo", "video"],
+            sortBy: "creationTime",
+          });
+          if (albumAssets) {
+            setlastCapturedUri(albumAssets.assets[0]?.uri);
+          }
+        }
 
-      const pictureSizesRes = await camera?.getAvailablePictureSizesAsync();
-      if (pictureSizesRes) {
-        setpictureSizes(pictureSizesRes);
+        const pictureSizesRes = await camera?.getAvailablePictureSizesAsync();
+        if (pictureSizesRes) {
+          setpictureSizes(pictureSizesRes);
+        }
       }
     })();
   }, [camera]);
@@ -141,13 +151,11 @@ export default function index() {
     }
   }
 
-  //NOTE: not getting album when separaed inages and videos
   async function addImage(imageUri: string) {
     const imagesDir = "AstroCam";
     const asset = await MediaLibrary.createAssetAsync(imageUri);
     const album = await MediaLibrary.getAlbumAsync(imagesDir);
     if (!album) {
-      console.log("images directories does not exists, creating...");
       await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
     } else {
       await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
@@ -158,25 +166,27 @@ export default function index() {
     const asset = await MediaLibrary.createAssetAsync(videoUri);
     const album = await MediaLibrary.getAlbumAsync(videosDir);
     if (!album) {
-      console.log("images directories does not exists, creating...");
       await MediaLibrary.createAlbumAsync(videosDir, asset, false);
     } else {
       await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
     }
   }
 
-  if (!permission) {
-    return <View />;
-  }
-
-  if (!permission.granted || !mediaPermission?.granted) {
+  if (!permission?.granted || !mediaPermission?.granted) {
+    const handleRequestPermissions = () => {
+      if (permission?.canAskAgain && mediaPermission?.canAskAgain) {
+        requestPermissions();
+      } else {
+        Linking.openSettings();
+      }
+    };
     return (
       <View
         className="h-full flex-1 items-center justify-center space-y-4"
         style={{ backgroundColor: colors.surface }}
       >
         <Text>We need your permission to show the camera</Text>
-        <Button onPress={requestPermissions} mode="elevated">
+        <Button onPress={handleRequestPermissions} mode="elevated">
           Grant Permission
         </Button>
       </View>
