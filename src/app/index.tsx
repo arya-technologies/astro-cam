@@ -281,9 +281,13 @@ export default function index() {
           <View className="flex-row items-center justify-evenly py-4">
             <Pressable onPress={() => router.navigate("preview")}>
               <Image
-                source={{
-                  uri: lastCapturedUri,
-                }}
+                source={
+                  lastCapturedUri
+                    ? {
+                        uri: lastCapturedUri,
+                      }
+                    : require("../../assets/icon.png")
+                }
                 className="w-16 h-16 rounded-full"
               />
             </Pressable>
