@@ -219,7 +219,7 @@ export default function index() {
               <IconButton
                 icon="aperture-outline"
                 mode="outlined"
-                selected={!autoFocus}
+                selected={autoFocus}
                 onPress={() => setautoFocus(!autoFocus)}
               />
               <IconButton
