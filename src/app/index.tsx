@@ -112,10 +112,9 @@ export default function index() {
 
   function toggleCameraMode() {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    setiso(0);
-    setexposure(0);
     setzoom(0);
   }
+
   async function handleCapture() {
     if (mode === "picture") {
       const data = await camera?.takePictureAsync({
@@ -197,10 +196,10 @@ export default function index() {
         <View style={{}} className="items-center">
           <CameraView
             mute
-            autofocus="on"
             mode={mode}
             zoom={zoom}
             facing="back"
+            autofocus="on"
             pictureSize={pictureSize}
             videoQuality={videoQuality}
             videoStabilizationMode={videoStabilization}
@@ -238,7 +237,7 @@ export default function index() {
               <List.Section>
                 <List.Item
                   title="Zoom"
-                  right={() => <Text>{(zoom * 10).toPrecision(2)}</Text>}
+                  right={() => <Text>{(zoom * 10).toPrecision(2)}x</Text>}
                 />
                 <Slider
                   minValue={0}
