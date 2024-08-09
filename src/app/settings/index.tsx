@@ -9,7 +9,7 @@ export default function Appearance() {
   const dispatch = useDispatch();
   const { appearance } = useSelector((state: RootState) => state.settings);
 
-  const [theme, settheme] = useState<ThemeProps>(appearance.theme);
+  const [theme, settheme] = useState<ThemeProps>(appearance?.theme);
   const [themes, setthemes] = useState<ThemeProps[]>([
     "dark",
     "light",

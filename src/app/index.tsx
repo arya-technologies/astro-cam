@@ -1,10 +1,14 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import { RootState } from "@/features/store";
 import Slider from "@/components/Slider";
+import {
+  PictureSizeProps,
+  RatioProps,
+  setcontrols,
+} from "@/features/slices/settingsSlice";
+import { RootState } from "@/features/store";
 import {
   CameraMode,
   CameraView,
-  FocusMode,
   ImageType,
   VideoQuality,
   VideoStabilization,
@@ -13,13 +17,7 @@ import {
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import {
   Button,
   Dialog,
@@ -31,11 +29,6 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  PictureSizeProps,
-  RatioProps,
-  setcontrols,
-} from "@/features/slices/settingsSlice";
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -57,21 +50,21 @@ export default function index() {
   const [mode, setmode] = useState<CameraMode>(controls?.mode);
   const [camera, setcamera] = useState<CameraView | null>();
   const [pictureSize, setpictureSize] = useState<PictureSizeProps>(
-    controls.pictureSize,
+    controls?.pictureSize,
   );
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [imageType, setimageType] = useState<ImageType>(controls.imageType);
+  const [imageType, setimageType] = useState<ImageType>(controls?.imageType);
   const [imageTypes, setimageTypes] = useState<ImageType[]>(["png", "jpg"]);
   const [iso, setiso] = useState<number>(0);
   const [exposure, setexposure] = useState<number>(0);
   const [zoom, setzoom] = useState<number>(0);
-  const [ratio, setratio] = useState<RatioProps>(controls.ratio);
+  const [ratio, setratio] = useState<RatioProps>(controls?.ratio);
   const [videoQuality, setvideoQuality] = useState<VideoQuality>(
-    controls.videoQuality,
+    controls?.videoQuality,
   );
   const videoQualities: VideoQuality[] = ["480p", "720p", "1080p", "2160p"];
   const [videoStabilization, setvideoStabilization] =
-    useState<VideoStabilization>(controls.videoStabilization);
+    useState<VideoStabilization>(controls?.videoStabilization);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);

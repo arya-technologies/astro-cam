@@ -32,7 +32,7 @@ export function Material3ThemeProvider({
   const colorScheme = useColorScheme();
 
   const themeMode = useSelector(
-    (state: RootState) => state.settings.appearance.theme,
+    (state: RootState) => state.settings.appearance?.theme,
   );
 
   const { theme, updateTheme, resetTheme } = useMaterial3Theme();
@@ -54,6 +54,7 @@ export function Material3ThemeProvider({
   };
 
   useEffect(() => {
+    console.log(themeMode);
     if (themeMode === "system") {
       Appearance.setColorScheme(null);
       resetTheme();

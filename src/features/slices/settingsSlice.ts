@@ -2,7 +2,6 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
   CameraMode,
-  FocusMode,
   ImageType,
   VideoQuality,
   VideoStabilization,
@@ -12,10 +11,10 @@ export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
 export type PictureSizeProps = "3000x3000";
 export type RatioProps = "1:1";
 
-export type AppearanceProps = {
+type AppearanceProps = {
   theme: ThemeProps;
 };
-export type ControlsProps = {
+type ControlsProps = {
   mode: CameraMode;
   pictureSize: PictureSizeProps;
   ratio: RatioProps;
@@ -51,9 +50,7 @@ export const settingsSlice = createSlice({
       { appearance },
       { payload }: PayloadAction<AppearanceProps>,
     ) => {
-      appearance = {
-        theme: payload.theme,
-      };
+      appearance.theme = payload.theme;
     },
     setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
       controls = {
