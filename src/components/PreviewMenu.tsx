@@ -1,17 +1,16 @@
-import { View, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 import {
   Button,
   Dialog,
-  Icon,
   IconButton,
   List,
   Portal,
   Text,
 } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CopyToClipButton from "./CopyToClipButton";
 
 type PreviewMenuProps = {

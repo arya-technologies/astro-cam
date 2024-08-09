@@ -1,5 +1,6 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import Slider from "@react-native-community/slider";
+import Slider from "@/components/Slider";
+// import Slider from "@react-native-community/slider";
 import {
   Camera,
   CameraType,
@@ -45,16 +46,15 @@ export default function index() {
   const [zoom, setzoom] = useState<number>(0);
   const [whiteBalance, setwhiteBalance] = useState<number>(0);
   const [ratio, setratio] = useState<string>("1:1");
-  const [imageType, setimageType] = useState<ImageType>(ImageType.png);
-  const [videoQuality, setvideoQuality] = useState<VideoQuality>(
-    VideoQuality["480p"],
-  );
   const [autoFocus, setautoFocus] = useState<boolean>(false);
-
-  const [imageTypes, setimageTyped] = useState<ImageType[]>([
+  const [imageType, setimageType] = useState<ImageType>(ImageType.png);
+  const [imageTypes, setimageTypes] = useState<ImageType[]>([
     ImageType.jpg,
     ImageType.png,
   ]);
+  const [videoQuality, setvideoQuality] = useState<VideoQuality>(
+    VideoQuality["480p"],
+  );
   const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
     VideoQuality["480p"],
     VideoQuality["720p"],
@@ -68,13 +68,15 @@ export default function index() {
   useEffect(() => {
     (async function () {
       const album = await MediaLibrary.getAlbumAsync("AstroCam");
-      const albumAssets = await MediaLibrary.getAssetsAsync({
-        album,
-        mediaType: ["photo", "video"],
-        sortBy: "creationTime",
-      });
-      if (albumAssets) {
-        setlastCapturedUri(albumAssets.assets[0]?.uri);
+      if (album) {
+        const albumAssets = await MediaLibrary.getAssetsAsync({
+          album,
+          mediaType: ["photo", "video"],
+          sortBy: "creationTime",
+        });
+        if (albumAssets) {
+          setlastCapturedUri(albumAssets.assets[0]?.uri);
+        }
       }
 
       const pictureSizesRes =
@@ -100,7 +102,7 @@ export default function index() {
   async function handleCapture() {
     if (mode === "picture") {
       const data = await camera?.takePictureAsync({
-        imageType,
+        imageType: ImageType.png,
         quality: 1,
         skipProcessing: true,
       });
@@ -237,11 +239,8 @@ export default function index() {
                       )}
                     />
                     <Slider
-                      minimumValue={0}
-                      maximumValue={1}
-                      minimumTrackTintColor={colors.outline}
-                      maximumTrackTintColor={colors.onSurfaceVariant}
-                      thumbTintColor={colors.primary}
+                      minValue={0}
+                      maxValue={1}
                       step={0.1}
                       value={focusDepth}
                       onValueChange={setfocusDepth}
@@ -257,11 +256,8 @@ export default function index() {
                   )}
                 />
                 <Slider
-                  minimumValue={0}
-                  maximumValue={1}
-                  minimumTrackTintColor={colors.outline}
-                  maximumTrackTintColor={colors.onSurfaceVariant}
-                  thumbTintColor={colors.primary}
+                  minValue={0}
+                  maxValue={1}
                   step={0.1}
                   value={whiteBalance}
                   onValueChange={setwhiteBalance}
@@ -273,11 +269,8 @@ export default function index() {
                   right={() => <Text>{(zoom * 10).toPrecision(2)}</Text>}
                 />
                 <Slider
-                  minimumValue={0}
-                  maximumValue={1}
-                  minimumTrackTintColor={colors.outline}
-                  maximumTrackTintColor={colors.onSurfaceVariant}
-                  thumbTintColor={colors.primary}
+                  minValue={0}
+                  maxValue={1}
                   step={0.1}
                   value={zoom}
                   onValueChange={setzoom}
@@ -344,7 +337,7 @@ export default function index() {
           <Dialog.Content>
             <RadioButton.Group
               value={imageType}
-              onValueChange={(value) => setvideoQuality(value)}
+              onValueChange={(value) => setimageType(value)}
             >
               {imageTypes.map((item) => (
                 <RadioButton.Item
@@ -356,7 +349,7 @@ export default function index() {
             </RadioButton.Group>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={hideResDialog}>Cancel</Button>
+            <Button onPress={hideImageTypesDialog}>Cancel</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
