@@ -1,6 +1,12 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import Slider from "@/components/Slider";
-// import Slider from "@react-native-community/slider";
+import {
+  CameraModeProps,
+  PictureSizeProps,
+  RatioProps,
+  setcontrols,
+} from "@/features/slices/settingsSlice";
+import { RootState } from "@/features/store";
 import {
   Camera,
   CameraType,
@@ -21,6 +27,7 @@ import {
   Text,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -29,6 +36,9 @@ export default function index() {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
+  const dispatch = useDispatch();
+
+  const { controls } = useSelector((state: RootState) => state.settings);
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
   const showResDialog = () => setisResDialogVisible(true);
@@ -39,21 +49,25 @@ export default function index() {
   const showImageTypesDialog = () => setisImageTypesDialogVisible(true);
   const hideImageTypesDialog = () => setisImageTypesDialogVisible(false);
 
-  const [mode, setmode] = useState<string>("picture");
+  const [mode, setmode] = useState<CameraModeProps>(controls.mode);
   const [focusDepth, setfocusDepth] = useState<number>(0);
-  const [pictureSize, setpictureSize] = useState<string>("3000x3000");
+  const [pictureSize, setpictureSize] = useState<PictureSizeProps>(
+    controls.pictureSize,
+  );
   const [pictureSizes, setpictureSizes] = useState<string[]>([]);
   const [zoom, setzoom] = useState<number>(0);
-  const [whiteBalance, setwhiteBalance] = useState<number>(0);
-  const [ratio, setratio] = useState<string>("1:1");
-  const [autoFocus, setautoFocus] = useState<boolean>(false);
-  const [imageType, setimageType] = useState<ImageType>(ImageType.png);
+  const [whiteBalance, setwhiteBalance] = useState<number>(
+    controls.whiteBalance,
+  );
+  const [ratio, setratio] = useState<RatioProps>(controls.ratio);
+  const [autoFocus, setautoFocus] = useState<boolean>(controls.autoFocus);
+  const [imageType, setimageType] = useState<ImageType>(controls.imageType);
   const [imageTypes, setimageTypes] = useState<ImageType[]>([
     ImageType.jpg,
     ImageType.png,
   ]);
   const [videoQuality, setvideoQuality] = useState<VideoQuality>(
-    VideoQuality["480p"],
+    controls.videoQuality,
   );
   const [videoQualities, setvideoQualities] = useState<VideoQuality[]>([
     VideoQuality["480p"],
@@ -86,6 +100,30 @@ export default function index() {
       }
     })();
   }, [camera]);
+
+  useEffect(() => {
+    dispatch(
+      setcontrols({
+        controls: {
+          mode,
+          autoFocus,
+          imageType,
+          pictureSize,
+          ratio,
+          videoQuality,
+          whiteBalance,
+        },
+      }),
+    );
+  }, [
+    mode,
+    autoFocus,
+    imageType,
+    pictureSize,
+    ratio,
+    videoQuality,
+    whiteBalance,
+  ]);
 
   const requestPermissions = () => {
     if (!permission?.granted) {
@@ -202,7 +240,7 @@ export default function index() {
               {mode === "video" ? (
                 <>
                   <IconButton
-                    icon="home"
+                    icon="image"
                     mode="contained"
                     onPress={showResDialog}
                   />

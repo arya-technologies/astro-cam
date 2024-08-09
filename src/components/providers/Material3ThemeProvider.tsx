@@ -54,7 +54,6 @@ export function Material3ThemeProvider({
   };
 
   useEffect(() => {
-    console.log(themeMode);
     if (themeMode === "system") {
       Appearance.setColorScheme(null);
       resetTheme();
