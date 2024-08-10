@@ -3,8 +3,7 @@ import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function index() {
@@ -19,6 +18,7 @@ export default function index() {
       const albumAssets = await MediaLibrary.getAssetsAsync({
         album,
         mediaType: ["photo", "video"],
+        sortBy: "creationTime",
       });
       if (albumAssets) {
         setassets(albumAssets.assets);
@@ -35,14 +35,28 @@ export default function index() {
         paddingBottom: bottom,
       }}
     >
-      {assets &&
-        assets.map((asset) =>
-          asset.mediaType === "video" ? (
-            <VideoPreview videoUri={asset.uri} />
+      <FlatList
+        horizontal
+        snapToAlignment="center"
+        pagingEnabled
+        viewabilityConfig={{ itemVisiblePercentThreshold: 90 }}
+        data={assets}
+        renderItem={({ item }) =>
+          item.mediaType === "video" ? (
+            <VideoPreview key={item.id} videoUri={item.uri} />
           ) : (
-            <ImagePreview imageUri={asset.uri} />
-          ),
-        )}
+            <ImagePreview key={item.id} imageUri={item.uri} />
+          )
+        }
+      />
     </View>
   );
 }
+// {assets &&
+//   assets.map((asset) =>
+//     asset.mediaType === "video" ? (
+//       <VideoPreview key={asset.id} videoUri={asset.uri} />
+//     ) : (
+//       <ImagePreview key={asset.id} imageUri={asset.uri} />
+//     ),
+//   )}

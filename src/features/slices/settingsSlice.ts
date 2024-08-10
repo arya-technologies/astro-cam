@@ -1,49 +1,45 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import {
+  CameraMode,
+  ImageType,
+  VideoQuality,
+  VideoStabilization,
+} from "expo-camera";
 
 export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
+export type PictureSizeProps = "3000x3000";
+export type RatioProps = "1:1";
 
-export type AppearanceProps = {
-  colors: {
-    theme: ThemeProps;
-  };
-  typography: {
-    useSystemFont: boolean;
-  };
+type AppearanceProps = {
+  theme: ThemeProps;
 };
-export type ControlsProps = {};
-export type StorageProps = {};
-export type OthersProps = {
-  battery: {
-    optimizationDisabled: boolean;
-  };
+type ControlsProps = {
+  mode: CameraMode;
+  pictureSize: PictureSizeProps;
+  ratio: RatioProps;
+  imageType: ImageType;
+  videoQuality: VideoQuality;
+  videoStabilization: VideoStabilization;
 };
 
 export interface SettingsProps {
   appearance: AppearanceProps;
   controls: ControlsProps;
-  storage: StorageProps;
-  others: OthersProps;
-  info: {};
 }
 
 const initialState: SettingsProps = {
   appearance: {
-    colors: {
-      theme: "system",
-    },
-    typography: {
-      useSystemFont: false,
-    },
+    theme: "system",
   },
-  controls: {},
-  storage: {},
-  others: {
-    battery: {
-      optimizationDisabled: false,
-    },
+  controls: {
+    mode: "picture",
+    pictureSize: "3000x3000",
+    ratio: "1:1",
+    imageType: "png",
+    videoQuality: "1080p",
+    videoStabilization: "off",
   },
-  info: {},
 };
 
 export const settingsSlice = createSlice({
@@ -54,27 +50,19 @@ export const settingsSlice = createSlice({
       { appearance },
       { payload }: PayloadAction<AppearanceProps>,
     ) => {
-      appearance.colors.theme = payload.colors.theme;
-      appearance.typography.useSystemFont = payload.typography.useSystemFont;
+      appearance.theme = payload.theme;
     },
-    setcontrols: (
-      { controls },
-      { payload }: PayloadAction<ControlsProps>,
-    ) => {},
-    setstorage: ({ storage }, { payload }: PayloadAction<StorageProps>) => {
-      storage = {};
-    },
-    setothers: ({ others }, { payload }: PayloadAction<OthersProps>) => {
-      others = {
-        battery: {
-          optimizationDisabled: payload.battery.optimizationDisabled,
-        },
-      };
+    setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
+      controls.mode = payload.mode;
+      controls.imageType = payload.imageType;
+      controls.pictureSize = payload.pictureSize;
+      controls.ratio = payload.ratio;
+      controls.videoQuality = payload.videoQuality;
+      controls.videoStabilization = payload.videoStabilization;
     },
   },
 });
 
-export const { setappearance, setcontrols, setstorage, setothers } =
-  settingsSlice.actions;
+export const { setappearance, setcontrols } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -7,7 +7,6 @@ import {
 import { createContext, useContext, useEffect } from "react";
 import { useColorScheme, Appearance } from "react-native";
 import {
-  adaptNavigationTheme,
   MD3DarkTheme,
   MD3LightTheme,
   MD3Theme,
@@ -33,7 +32,7 @@ export function Material3ThemeProvider({
   const colorScheme = useColorScheme();
 
   const themeMode = useSelector(
-    (state: RootState) => state.settings.appearance.colors.theme,
+    (state: RootState) => state.settings.appearance?.theme,
   );
 
   const { theme, updateTheme, resetTheme } = useMaterial3Theme();
@@ -52,7 +51,6 @@ export function Material3ThemeProvider({
       level5: "#212121",
     },
     backdrop: "#000000CC",
-    // onSurfaceVariant: "#f00",
   };
 
   useEffect(() => {
