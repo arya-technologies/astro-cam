@@ -42,24 +42,31 @@ export default function index() {
     MediaLibrary.usePermissions();
 
   const camera = useRef<Camera>(null);
-  const devices = useCameraDevices();
-  const device: CameraDevice = useCameraDevice("back", {
+  const device: CameraDevice | undefined = useCameraDevice("back", {
     physicalDevices: [
       "ultra-wide-angle-camera",
       "wide-angle-camera",
       "telephoto-camera",
     ],
   });
+  const devices = useCameraDevices();
   const usbCamera = useCameraDevice("external");
-  const format = useCameraFormat(device, []);
+  const format = useCameraFormat(device, [
+    { photoAspectRatio: 1 / 1, videoResolution: { width: 3000, height: 3000 } },
+  ]);
   const [fps, setfps] = useState(format?.maxFps);
+  const [iso, setiso] = useState(format?.minISO);
+  const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
+  const [exposure, setexposure] = useState(device?.minExposure);
+  console.log(format);
 
   // const isFocused = useIsFocused()
   //   const appState = useAppState()
   //   const isActive = isFocused && appState === "active"
 
   const [mode, setmode] = useState<"picture" | "video">("picture");
-  const [zoom, setzoom] = useState<number>(device.neutralZoom);
+  const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
+  const [videoType, setvideoType] = useState<"mov" | "mp4">("mov");
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -67,10 +74,16 @@ export default function index() {
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
   const showResDialog = () => setisResDialogVisible(true);
   const hideResDialog = () => setisResDialogVisible(false);
+
   const [isPictureTypesDialogVisible, setisPictureTypesDialogVisible] =
     useState<boolean>(false);
   const showPictureTypesDialog = () => setisPictureTypesDialogVisible(true);
   const hidePictureTypesDialog = () => setisPictureTypesDialogVisible(false);
+
+  const [isVideoTypesDialogVisible, setisVideoTypesDialogVisible] =
+    useState<boolean>(false);
+  const showVideoTypesDialog = () => setisVideoTypesDialogVisible(true);
+  const hideVideoTypesDialog = () => setisVideoTypesDialogVisible(false);
 
   useEffect(() => {
     (async function () {
@@ -136,7 +149,7 @@ export default function index() {
 
   const toggleCameraMode = () => {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    // setzoom(device.neutralZoom);
+    // setzoom(device?.neutralZoom);
   };
 
   const handleCapture = async () => {
@@ -200,7 +213,7 @@ export default function index() {
           <Camera
             isActive={true}
             ref={camera}
-            device={device}
+            device={device!}
             format={format}
             fps={fps}
             photo={true}
@@ -209,6 +222,7 @@ export default function index() {
             photoHdr={false}
             videoHdr={false}
             zoom={zoom}
+            photoQualityBalance="quality"
             videoStabilizationMode="off"
             resizeMode="contain"
             androidPreviewViewType="surface-view"
@@ -224,6 +238,11 @@ export default function index() {
                     icon="image"
                     mode="contained"
                     onPress={showResDialog}
+                  />
+                  <IconButton
+                    icon="image"
+                    mode="contained"
+                    onPress={showVideoTypesDialog}
                   />
                 </>
               ) : (
@@ -242,14 +261,63 @@ export default function index() {
               />
             </View>
             <View className="flex-grow justify-end">
+              {mode === "video" ? (
+                <>
+                  <List.Section>
+                    <List.Item title="Fps" right={() => <Text>{fps}</Text>} />
+                    <Slider
+                      minValue={format?.minFps!}
+                      maxValue={format?.maxFps!}
+                      step={1}
+                      value={fps!}
+                      onValueChange={setfps}
+                    />
+                  </List.Section>
+                </>
+              ) : (
+                <></>
+              )}
+              <List.Section>
+                <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
+                <Slider
+                  minValue={format?.minISO!}
+                  maxValue={format?.maxISO!}
+                  step={1}
+                  value={iso!}
+                  onValueChange={setiso}
+                />
+              </List.Section>
               <List.Section>
                 <List.Item
-                  title="Zoom"
-                  right={() => <Text>{(zoom * 10).toPrecision(2)}x</Text>}
+                  title="Exposure"
+                  right={() => <Text>{exposure}</Text>}
                 />
                 <Slider
-                  minValue={device.minZoom}
-                  maxValue={device.maxZoom}
+                  minValue={device?.minExposure!}
+                  maxValue={device?.maxExposure!}
+                  step={1}
+                  value={exposure!}
+                  onValueChange={setexposure}
+                />
+              </List.Section>
+              <List.Section>
+                <List.Item
+                  title="Focus"
+                  right={() => <Text>{focusDepth}</Text>}
+                />
+                <Slider
+                  minValue={device?.minFocusDistance!}
+                  maxValue={100}
+                  step={1}
+                  value={focusDepth!}
+                  onValueChange={setfocusDepth}
+                />
+              </List.Section>
+              <List.Section>
+                <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
+                <Slider
+                  minValue={device?.minZoom!}
+                  maxValue={device?.maxZoom!}
                   step={1}
                   value={zoom}
                   onValueChange={setzoom}
@@ -289,7 +357,28 @@ export default function index() {
           </View>
         </View>
       </View>
-      <></>
+      <>
+        <Portal>
+          <Dialog
+            visible={isVideoTypesDialogVisible}
+            onDismiss={hideVideoTypesDialog}
+          >
+            <Dialog.Title>Image Types</Dialog.Title>
+            <Dialog.Content>
+              <RadioButton.Group
+                value={videoType}
+                onValueChange={(type: any) => setvideoType(type)}
+              >
+                <RadioButton.Item label="mov" value="mov" />
+                <RadioButton.Item label="mp4" value="mp4" />
+              </RadioButton.Group>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideVideoTypesDialog}>Cancel</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      </>
     </>
   );
 }
