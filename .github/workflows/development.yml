@@ -1,7 +1,5 @@
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
+branches: dev
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +30,15 @@ jobs:
         run: npm install
 
       - name: 🚀 Build app
-        run: eas build --profile preview --platform android --local
-        # run: eas build --profile preview --platform android --non-interactive
-        # run: eas build --platform android --non-interactive
+        run: |
+          eas build --local \
+          --profile development \
+          --platform android \
+          --non-interactive \
+          --output=./app-build
+
+      - name: 📱 Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-android-dev
+          path: app-build
