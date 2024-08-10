@@ -7,10 +7,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Setup repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "oracle"
+          java-version: "17"
+          cache: "gradle"
 
       - name: 🏗 Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: npm
@@ -26,4 +33,6 @@ jobs:
         run: npm install
 
       - name: 🚀 Build app
-        run: eas build --platform android --non-interactive
+        run: eas build --profile preview --platform android --local
+        # run: eas build --profile preview --platform android --non-interactive
+        # run: eas build --platform android --non-interactive
