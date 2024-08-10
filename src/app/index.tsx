@@ -50,15 +50,18 @@ export default function index() {
     ],
   });
   const devices = useCameraDevices();
-  const usbCamera = useCameraDevice("external");
-  const format = useCameraFormat(device, [
-    { photoAspectRatio: 1 / 1, videoResolution: { width: 3000, height: 3000 } },
-  ]);
+  const usbDevice = useCameraDevice("external");
+  const format = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
   const [fps, setfps] = useState(format?.maxFps);
   const [iso, setiso] = useState(format?.minISO);
+  const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
-  const [exposure, setexposure] = useState(device?.minExposure);
-  console.log(format);
+  const [exposure, setexposure] = useState(0);
+
+  useEffect(() => {
+    console.log(device?.physicalDevices);
+    console.log(format);
+  }, []);
 
   // const isFocused = useIsFocused()
   //   const appState = useAppState()
@@ -222,6 +225,12 @@ export default function index() {
             photoHdr={false}
             videoHdr={false}
             zoom={zoom}
+            exposure={exposure}
+            lowLightBoost={false}
+            isMirrored={false}
+            enableLocation
+            isTVSelectable
+            enableFpsGraph
             photoQualityBalance="quality"
             videoStabilizationMode="off"
             resizeMode="contain"
@@ -301,19 +310,6 @@ export default function index() {
                 />
               </List.Section>
               <List.Section>
-                <List.Item
-                  title="Focus"
-                  right={() => <Text>{focusDepth}</Text>}
-                />
-                <Slider
-                  minValue={device?.minFocusDistance!}
-                  maxValue={100}
-                  step={1}
-                  value={focusDepth!}
-                  onValueChange={setfocusDepth}
-                />
-              </List.Section>
-              <List.Section>
                 <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
                 <Slider
                   minValue={device?.minZoom!}
@@ -382,3 +378,16 @@ export default function index() {
     </>
   );
 }
+// <List.Section>
+//   <List.Item
+//     title="Focus"
+//     right={() => <Text>{focusDepth}</Text>}
+//   />
+//   <Slider
+//     minValue={device?.minFocusDistance!}
+//     maxValue={100}
+//     step={1}
+//     value={focusDepth!}
+//     onValueChange={setfocusDepth}
+//   />
+// </List.Section>
