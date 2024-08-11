@@ -1,15 +1,13 @@
-import React, { useRef } from "react";
-import { router } from "expo-router";
-import { Appbar, IconButton } from "react-native-paper";
 import ImagePreview from "@/components/ImagePreview";
+import PreviewMenu from "@/components/PreviewMenu";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
-import { useEffect, useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
+import { Appbar } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PreviewMenu from "@/components/PreviewMenu";
-import { isFulfilled } from "@reduxjs/toolkit";
 
 export default function preview() {
   const { colors } = useAppTheme();
