@@ -12,13 +12,8 @@ import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
-import {
-  Image,
-  Linking,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import * as Linking from "expo-linking";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import { Button, IconButton, List, Text } from "react-native-paper";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -153,7 +148,9 @@ export default function index() {
       if (!hasPermission && mediaPermission?.canAskAgain) {
         requestPermissions();
       } else {
-        Linking.openSettings();
+        console.log("open settings");
+        // Linking.openSettings();
+        Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
       }
     };
     return (
