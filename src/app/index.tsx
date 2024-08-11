@@ -75,9 +75,7 @@ export default function index() {
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
   const [exposure, setexposure] = useState(0);
 
-  useEffect(() => {
-    console.log(videoFormat);
-  }, [format]);
+  useEffect(() => {}, []);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -118,7 +116,7 @@ export default function index() {
         }
       }
     })();
-  }, [camera]);
+  }, [mediaPermission]);
 
   // useEffect(() => {
   //   dispatch(
@@ -148,7 +146,6 @@ export default function index() {
       if (!hasPermission && mediaPermission?.canAskAgain) {
         requestPermissions();
       } else {
-        console.log("open settings");
         // Linking.openSettings();
         Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
       }

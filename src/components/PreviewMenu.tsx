@@ -15,9 +15,10 @@ import CopyToClipButton from "./CopyToClipButton";
 
 type PreviewMenuProps = {
   asset: MediaLibrary.Asset;
+  visible: boolean;
 };
 
-export default function PreviewMenu({ asset }: PreviewMenuProps) {
+export default function PreviewMenu({ asset, visible }: PreviewMenuProps) {
   const { top, bottom } = useSafeAreaInsets();
   const [assetInfo, setassetInfo] = useState<MediaLibrary.AssetInfo>();
   const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
@@ -36,7 +37,7 @@ export default function PreviewMenu({ asset }: PreviewMenuProps) {
     <>
       <View
         className="absolute bottom-0 left-0 w-full"
-        style={{ paddingBottom: bottom }}
+        style={{ paddingBottom: bottom, opacity: visible ? 0 : 1 }}
       >
         <View className="flex-row items-center justify-evenly py-4">
           <IconButton

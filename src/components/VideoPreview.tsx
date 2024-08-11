@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 
-export default function VideoPreview({ videoUri }) {
+type VideoPreviewProps = {
+  videoUri: string;
+};
+
+export default function VideoPreview({ videoUri }: VideoPreviewProps) {
   const [isfullscreen, setisfullscreen] = useState<boolean>(false);
 
   const ref = useRef(null);
@@ -35,7 +39,7 @@ export default function VideoPreview({ videoUri }) {
         player={player}
         allowsFullscreen
         contentFit="contain"
-        className="w-[95vw] h-[95vw] absolute -z-10"
+        className="w-full h-full absolute -z-10"
       />
     </View>
   );

@@ -6,9 +6,10 @@ import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PreviewMenu from "@/components/PreviewMenu";
+import { isFulfilled } from "@reduxjs/toolkit";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -17,6 +18,8 @@ export default function preview() {
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
   const [asset, setasset] = useState<MediaLibrary.Asset>();
+  const [isFullScreen, setisFullScreen] = useState<boolean>(false);
+  const toggleFullScreen = () => setisFullScreen(!isFullScreen);
 
   useEffect(() => {
     (async function () {
@@ -34,6 +37,20 @@ export default function preview() {
     })();
   }, []);
 
+  const renderItem = (item: MediaLibrary.Asset) => {
+    return (
+      <>
+        <Pressable onPress={toggleFullScreen}>
+          {item.mediaType === "video" ? (
+            <VideoPreview key={item.id} videoUri={item.uri} />
+          ) : (
+            <ImagePreview key={item.id} imageUri={item.uri} />
+          )}
+        </Pressable>
+      </>
+    );
+  };
+
   return (
     <View
       className="h-full flex-1"
@@ -41,7 +58,7 @@ export default function preview() {
         backgroundColor: colors.surface,
       }}
     >
-      <Appbar.Header mode="small">
+      <Appbar.Header mode="small" style={{ opacity: isFullScreen ? 0 : 1 }}>
         <Appbar.BackAction
           onPress={() => {
             router.back();
@@ -59,18 +76,10 @@ export default function preview() {
         data={assets}
         initialNumToRender={1}
         renderItem={({ item }) => renderItem(item)}
-        className="absolute h-full -z-10"
+        className="w-full h-full absolute h-full -z-10"
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
       />
-      {asset && <PreviewMenu asset={asset} />}
+      {asset && <PreviewMenu asset={asset} visible={isFullScreen} />}
     </View>
   );
 }
-
-const renderItem = (item: MediaLibrary.Asset) => {
-  return item.mediaType === "video" ? (
-    <VideoPreview key={item.id} videoUri={item.uri} />
-  ) : (
-    <ImagePreview key={item.id} imageUri={item.uri} />
-  );
-};
