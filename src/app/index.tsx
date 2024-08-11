@@ -28,6 +28,7 @@ import Slider from "@/components/Slider";
 import SelectDialog from "@/components/SelectDialog";
 import SelectFormatDialog from "@/components/SelectFormatDialog";
 import SelectDeviceDialog from "@/components/SelectDeviceDialog";
+import { DevMenu } from "expo-dev-client";
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -44,9 +45,7 @@ export default function index() {
 
   const camera = useRef<Camera>(null);
   const devices = useCameraDevices();
-  const [device, setdevice] = useState<CameraDevice | undefined>(
-    useCameraDevice("back"),
-  );
+  const [device, setdevice] = useState<CameraDevice | undefined>(devices[0]);
   // const device: CameraDevice | undefined = useCameraDevice("back", {
   //   // physicalDevices: [
   //   //   "ultra-wide-angle-camera",
@@ -56,31 +55,30 @@ export default function index() {
   // });
   const usbDevice = useCameraDevice("external");
 
-  const [format, setformat] = useState<CameraDeviceFormat | undefined>(
-    useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]),
-  );
-  // const format = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  const [mode, setmode] = useState<"picture" | "video">("picture");
+  const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
+  const [videoType, setvideoType] = useState<"mov" | "mp4">("mov");
 
-  const [fps, setfps] = useState(format?.maxFps);
+  const [imageRes, setimageRes] = useState<number>(
+    device?.formats[0].photoWidth!,
+  );
+  const [videoRes, setvideoRes] = useState<number>(
+    device?.formats[0].videoWidth!,
+  );
+  // const [format, setformat] = useState<CameraDeviceFormat | undefined>(
+  //   device?.formats[0],
+  // );
+  const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  const videoFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  const format = mode === "video" ? videoFormat : imageFormat;
+
   const [iso, setiso] = useState(format?.minISO);
+  const [fps, setfps] = useState(format?.maxFps);
   const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
   const [exposure, setexposure] = useState(0);
 
-  useEffect(() => {
-    // const formatTest = format;
-    // console.log(formatTest, typeof formatTest);
-    // const formatString = JSON.stringify(formatTest);
-    // console.log(formatString, typeof formatString);
-    // const formatObject = JSON.parse(formatString);
-    // console.log(formatObject, typeof formatObject);
-    // device?.formats.map((item) => console.log(item));
-    // devices.map((item) => console.log(item.name));
-  }, []);
-
-  const [mode, setmode] = useState<"picture" | "video">("picture");
-  const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
-  const [videoType, setvideoType] = useState<"mov" | "mp4">("mov");
+  useEffect(() => {}, [console.log(device?.formats[0])]);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -94,10 +92,6 @@ export default function index() {
     useState<boolean>(false);
   const showFormatsDialog = () => setisFormatsDialogVisible(true);
   const hideFormatsDialog = () => setisFormatsDialogVisible(false);
-
-  const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
-  const showResDialog = () => setisResDialogVisible(true);
-  const hideResDialog = () => setisResDialogVisible(false);
 
   const [isPictureTypesDialogVisible, setisPictureTypesDialogVisible] =
     useState<boolean>(false);
@@ -380,21 +374,26 @@ export default function index() {
         </View>
       </View>
       <>
+        <SelectFormatDialog
+          title="Format"
+          videoRes={videoRes}
+          minRes={device?.formats.pop()?.videoWidth!}
+          maxRes={device?.formats[0].videoWidth!}
+          setVideoRes={setvideoRes}
+          fps={fps!}
+          minFps={format?.minFps!}
+          maxFps={format?.maxFps!}
+          setFps={setfps}
+          visible={isFormatsDialogVisible}
+          onDismiss={hideFormatsDialog}
+        />
         <SelectDeviceDialog
           data={devices}
           title="Devices"
-          value={JSON.stringify(device)}
+          value={device?.id!}
           setValue={setdevice}
           visible={isDevicesDialogVisible}
           onDismiss={hideDevicesDialog}
-        />
-        <SelectFormatDialog
-          data={device?.formats!}
-          title="Formats"
-          value={JSON.stringify(format)}
-          setValue={setformat}
-          visible={isFormatsDialogVisible}
-          onDismiss={hideFormatsDialog}
         />
         <SelectDialog
           data={["mov", "mp4"]}

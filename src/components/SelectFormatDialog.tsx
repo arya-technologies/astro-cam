@@ -1,41 +1,63 @@
 import React from "react";
-import { Portal, Dialog, RadioButton, Button } from "react-native-paper";
-import { CameraDeviceFormat } from "react-native-vision-camera";
+import { ScrollView } from "react-native";
+import { Button, Dialog, List, Portal, Text } from "react-native-paper";
+import Slider from "./Slider";
 
 type DialogProps = {
   title: string;
   visible: boolean;
   onDismiss: () => void;
-  value: string;
-  setValue: (value: CameraDeviceFormat) => void;
-  data: CameraDeviceFormat[];
+  videoRes: number;
+  setVideoRes: (value: number) => void;
+  minRes: number;
+  maxRes: number;
+  fps: number;
+  minFps: number;
+  maxFps: number;
+  setFps: (value: number) => void;
 };
 
 export default function SelectFormatDialog({
-  data,
   title,
-  value,
+  videoRes,
   visible,
   onDismiss,
-  setValue,
+  setVideoRes,
+  minRes,
+  maxRes,
+  fps,
+  minFps,
+  maxFps,
+  setFps,
 }: DialogProps) {
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
         <Dialog.Title>{title}</Dialog.Title>
         <Dialog.Content>
-          <RadioButton.Group
-            value={value}
-            onValueChange={(val) => setValue(JSON.parse(val))}
-          >
-            {data.map((item) => (
-              <RadioButton.Item
-                key={JSON.stringify(item)}
-                label={JSON.stringify(item)}
-                value={JSON.stringify(item)}
-              />
-            ))}
-          </RadioButton.Group>
+          <List.Section>
+            <List.Item
+              title="Resolution"
+              right={() => <Text>{videoRes}</Text>}
+            />
+            <Slider
+              minValue={minRes}
+              maxValue={maxRes}
+              step={360}
+              value={videoRes}
+              onValueChange={setVideoRes}
+            />
+          </List.Section>
+          <List.Section>
+            <List.Item title="FPS" right={() => <Text>{fps}</Text>} />
+            <Slider
+              minValue={minFps}
+              maxValue={maxFps}
+              step={1}
+              value={fps}
+              onValueChange={setFps}
+            />
+          </List.Section>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss}>Cancel</Button>

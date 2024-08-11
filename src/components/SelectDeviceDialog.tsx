@@ -26,13 +26,16 @@ export default function SelectDeviceDialog({
         <Dialog.Content>
           <RadioButton.Group
             value={value}
-            onValueChange={(val) => setValue(JSON.parse(val))}
+            onValueChange={(val) => {
+              const res = data.find((item) => item.id === val);
+              res && setValue(res);
+            }}
           >
             {data.map((item) => (
               <RadioButton.Item
-                key={JSON.stringify(item)}
-                label={JSON.stringify(item)}
-                value={JSON.stringify(item)}
+                key={item.id}
+                label={item.position}
+                value={item.id}
               />
             ))}
           </RadioButton.Group>
