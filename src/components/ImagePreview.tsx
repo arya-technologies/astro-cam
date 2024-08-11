@@ -1,5 +1,5 @@
-import { View, Text, Image } from "react-native";
 import React from "react";
+import { Image } from "react-native";
 
 type ImagePreviewProps = {
   imageUri: string;
@@ -7,12 +7,10 @@ type ImagePreviewProps = {
 
 export default function ImagePreview({ imageUri }: ImagePreviewProps) {
   return (
-    <View className="w-screen h-screen items-center justify-center">
-      <Image
-        source={{ uri: imageUri }}
-        className="w-full h-full"
-        resizeMode="contain"
-      />
-    </View>
+    <Image
+      source={{ uri: imageUri }}
+      className="w-full h-full"
+      resizeMode="contain"
+    />
   );
 }

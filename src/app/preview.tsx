@@ -5,7 +5,7 @@ import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { Dimensions, FlatList, Pressable, View } from "react-native";
 import { Appbar } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
@@ -13,6 +13,7 @@ import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 export default function preview() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
+  const { width, height } = Dimensions.get("screen");
   const flatlist = useRef(null);
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
@@ -53,7 +54,7 @@ export default function preview() {
   const renderItem = (item: MediaLibrary.Asset) => {
     return (
       <>
-        <Pressable onPress={handleFullScreen}>
+        <Pressable onPress={handleFullScreen} style={{ width, height }}>
           {item.mediaType === "video" ? (
             <VideoPreview key={item.id} videoUri={item.uri} />
           ) : (
