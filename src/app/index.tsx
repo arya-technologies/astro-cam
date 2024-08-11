@@ -26,6 +26,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/features/store";
 import Slider from "@/components/Slider";
 import SelectDialog from "@/components/SelectDialog";
+import SelectFormatDialog from "@/components/SelectFormatDialog";
+import SelectDeviceDialog from "@/components/SelectDeviceDialog";
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -66,11 +68,12 @@ export default function index() {
   const [exposure, setexposure] = useState(0);
 
   useEffect(() => {
-    const formatTest = format;
-    console.log(formatTest);
-    const formatString = JSON.stringify(formatTest);
-    console.log(formatString);
-    console.log(JSON.parse(formatString));
+    // const formatTest = format;
+    // console.log(formatTest, typeof formatTest);
+    // const formatString = JSON.stringify(formatTest);
+    // console.log(formatString, typeof formatString);
+    // const formatObject = JSON.parse(formatString);
+    // console.log(formatObject, typeof formatObject);
     // device?.formats.map((item) => console.log(item));
     // devices.map((item) => console.log(item.name));
   }, []);
@@ -377,19 +380,19 @@ export default function index() {
         </View>
       </View>
       <>
-        <SelectDialog
-          data={devices.map((item) => item.name)}
+        <SelectDeviceDialog
+          data={devices}
           title="Devices"
-          value={videoType}
-          setValue={setvideoType}
+          value={JSON.stringify(device)}
+          setValue={setdevice}
           visible={isDevicesDialogVisible}
           onDismiss={hideDevicesDialog}
         />
-        <SelectDialog
-          data={devices.map((item) => item.name)}
+        <SelectFormatDialog
+          data={device?.formats!}
           title="Formats"
-          value={videoType}
-          setValue={setvideoType}
+          value={JSON.stringify(format)}
+          setValue={setformat}
           visible={isFormatsDialogVisible}
           onDismiss={hideFormatsDialog}
         />

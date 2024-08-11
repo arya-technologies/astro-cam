@@ -1,17 +1,17 @@
 import React from "react";
 import { Portal, Dialog, RadioButton, Button } from "react-native-paper";
-import { CameraDeviceFormat } from "react-native-vision-camera";
+import { CameraDevice } from "react-native-vision-camera";
 
 type DialogProps = {
   title: string;
   visible: boolean;
   onDismiss: () => void;
   value: string;
-  setValue: (value: string) => void;
-  data: CameraDeviceFormat[];
+  setValue: (value: CameraDevice) => void;
+  data: CameraDevice[];
 };
 
-export default function SelectDialog({
+export default function SelectDeviceDialog({
   data,
   title,
   value,
@@ -26,10 +26,14 @@ export default function SelectDialog({
         <Dialog.Content>
           <RadioButton.Group
             value={value}
-            onValueChange={(val) => setValue(val)}
+            onValueChange={(val) => setValue(JSON.parse(val))}
           >
             {data.map((item) => (
-              <RadioButton.Item key={item} label={item} value={item} />
+              <RadioButton.Item
+                key={JSON.stringify(item)}
+                label={JSON.stringify(item)}
+                value={JSON.stringify(item)}
+              />
             ))}
           </RadioButton.Group>
         </Dialog.Content>
