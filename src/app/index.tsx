@@ -59,17 +59,19 @@ export default function index() {
   const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
   const [videoType, setvideoType] = useState<"mov" | "mp4">("mov");
 
-  const [imageRes, setimageRes] = useState<number>(
-    device?.formats[0].photoWidth!,
-  );
   const [videoRes, setvideoRes] = useState<number>(
-    device?.formats[0].videoWidth!,
+    device?.formats[0].videoHeight!,
   );
   // const [format, setformat] = useState<CameraDeviceFormat | undefined>(
   //   device?.formats[0],
   // );
   const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
-  const videoFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  const videoFormat = useCameraFormat(device, [
+    {
+      videoAspectRatio: 9 / 16,
+      videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
+    },
+  ]);
   const format = mode === "video" ? videoFormat : imageFormat;
 
   const [iso, setiso] = useState(format?.minISO);
@@ -78,7 +80,9 @@ export default function index() {
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
   const [exposure, setexposure] = useState(0);
 
-  useEffect(() => {}, [console.log(device?.formats[0])]);
+  useEffect(() => {
+    console.log(videoFormat);
+  }, [format]);
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -263,6 +267,11 @@ export default function index() {
                     mode="contained"
                     onPress={showVideoTypesDialog}
                   />
+                  <IconButton
+                    icon="home"
+                    mode="contained"
+                    onPress={showFormatsDialog}
+                  />
                 </>
               ) : (
                 <>
@@ -276,11 +285,6 @@ export default function index() {
               <IconButton
                 icon="home"
                 mode="contained"
-                onPress={showFormatsDialog}
-              />
-              <IconButton
-                icon="home"
-                mode="contained"
                 onPress={showDevicesDialog}
               />
               <IconButton
@@ -290,22 +294,7 @@ export default function index() {
               />
             </View>
             <View className="flex-grow justify-end">
-              {mode === "video" ? (
-                <>
-                  <List.Section>
-                    <List.Item title="Fps" right={() => <Text>{fps}</Text>} />
-                    <Slider
-                      minValue={format?.minFps!}
-                      maxValue={format?.maxFps!}
-                      step={1}
-                      value={fps!}
-                      onValueChange={setfps}
-                    />
-                  </List.Section>
-                </>
-              ) : (
-                <></>
-              )}
+              {mode === "video" ? <></> : <></>}
               <List.Section>
                 <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
                 <Slider
@@ -377,8 +366,8 @@ export default function index() {
         <SelectFormatDialog
           title="Format"
           videoRes={videoRes}
-          minRes={device?.formats.pop()?.videoWidth!}
-          maxRes={device?.formats[0].videoWidth!}
+          minRes={device?.formats.pop()?.videoHeight!}
+          maxRes={device?.formats[0].videoHeight!}
           setVideoRes={setvideoRes}
           fps={fps!}
           minFps={format?.minFps!}
