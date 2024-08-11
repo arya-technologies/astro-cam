@@ -6,6 +6,7 @@ import {
   useCameraFormat,
   useCameraPermission,
 } from "react-native-vision-camera";
+import { useAppState } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import * as MediaLibrary from "expo-media-library";
@@ -41,17 +42,23 @@ export default function index() {
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
 
+  // const isFocused = useIsFocused()
+  const appState = useAppState();
+  const isActive = appState === "active";
+
   const camera = useRef<Camera>(null);
   const device: CameraDevice | undefined = useCameraDevice("back", {
-    physicalDevices: [
-      "ultra-wide-angle-camera",
-      "wide-angle-camera",
-      "telephoto-camera",
-    ],
+    // physicalDevices: [
+    //   "ultra-wide-angle-camera",
+    //   "wide-angle-camera",
+    //   "telephoto-camera",
+    // ],
   });
   const devices = useCameraDevices();
   const usbDevice = useCameraDevice("external");
+
   const format = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+
   const [fps, setfps] = useState(format?.maxFps);
   const [iso, setiso] = useState(format?.minISO);
   const [focus, setfocus] = useState<boolean>(false);
@@ -59,13 +66,9 @@ export default function index() {
   const [exposure, setexposure] = useState(0);
 
   useEffect(() => {
-    console.log(device?.physicalDevices);
-    console.log(format);
+    device?.formats.map((item) => console.log(item));
+    // devices.map((item) => console.log(item.name));
   }, []);
-
-  // const isFocused = useIsFocused()
-  //   const appState = useAppState()
-  //   const isActive = isFocused && appState === "active"
 
   const [mode, setmode] = useState<"picture" | "video">("picture");
   const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
@@ -214,7 +217,7 @@ export default function index() {
       >
         <View style={{}} className="items-center">
           <Camera
-            isActive={true}
+            isActive={false}
             ref={camera}
             device={device!}
             format={format}
@@ -228,7 +231,7 @@ export default function index() {
             exposure={exposure}
             lowLightBoost={false}
             isMirrored={false}
-            enableLocation
+            enableLocation={false}
             isTVSelectable
             enableFpsGraph
             photoQualityBalance="quality"
