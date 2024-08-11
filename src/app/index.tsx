@@ -1,6 +1,7 @@
 import {
   Camera,
   CameraDevice,
+  CameraDeviceFormat,
   useCameraDevice,
   useCameraDevices,
   useCameraFormat,
@@ -18,20 +19,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  Button,
-  Dialog,
-  IconButton,
-  List,
-  Portal,
-  RadioButton,
-  Text,
-} from "react-native-paper";
+import { Button, IconButton, List, Text } from "react-native-paper";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/features/store";
 import Slider from "@/components/Slider";
+import SelectDialog from "@/components/SelectDialog";
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -47,17 +41,23 @@ export default function index() {
   const isActive = appState === "active";
 
   const camera = useRef<Camera>(null);
-  const device: CameraDevice | undefined = useCameraDevice("back", {
-    // physicalDevices: [
-    //   "ultra-wide-angle-camera",
-    //   "wide-angle-camera",
-    //   "telephoto-camera",
-    // ],
-  });
   const devices = useCameraDevices();
+  const [device, setdevice] = useState<CameraDevice | undefined>(
+    useCameraDevice("back"),
+  );
+  // const device: CameraDevice | undefined = useCameraDevice("back", {
+  //   // physicalDevices: [
+  //   //   "ultra-wide-angle-camera",
+  //   //   "wide-angle-camera",
+  //   //   "telephoto-camera",
+  //   // ],
+  // });
   const usbDevice = useCameraDevice("external");
 
-  const format = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  const [format, setformat] = useState<CameraDeviceFormat | undefined>(
+    useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]),
+  );
+  // const format = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
 
   const [fps, setfps] = useState(format?.maxFps);
   const [iso, setiso] = useState(format?.minISO);
@@ -66,7 +66,12 @@ export default function index() {
   const [exposure, setexposure] = useState(0);
 
   useEffect(() => {
-    device?.formats.map((item) => console.log(item));
+    const formatTest = format;
+    console.log(formatTest);
+    const formatString = JSON.stringify(formatTest);
+    console.log(formatString);
+    console.log(JSON.parse(formatString));
+    // device?.formats.map((item) => console.log(item));
     // devices.map((item) => console.log(item.name));
   }, []);
 
@@ -76,6 +81,16 @@ export default function index() {
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
+
+  const [isDevicesDialogVisible, setisDevicesDialogVisible] =
+    useState<boolean>(false);
+  const showDevicesDialog = () => setisDevicesDialogVisible(true);
+  const hideDevicesDialog = () => setisDevicesDialogVisible(false);
+
+  const [isFormatsDialogVisible, setisFormatsDialogVisible] =
+    useState<boolean>(false);
+  const showFormatsDialog = () => setisFormatsDialogVisible(true);
+  const hideFormatsDialog = () => setisFormatsDialogVisible(false);
 
   const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
   const showResDialog = () => setisResDialogVisible(true);
@@ -249,11 +264,6 @@ export default function index() {
                   <IconButton
                     icon="image"
                     mode="contained"
-                    onPress={showResDialog}
-                  />
-                  <IconButton
-                    icon="image"
-                    mode="contained"
                     onPress={showVideoTypesDialog}
                   />
                 </>
@@ -266,6 +276,16 @@ export default function index() {
                   />
                 </>
               )}
+              <IconButton
+                icon="home"
+                mode="contained"
+                onPress={showFormatsDialog}
+              />
+              <IconButton
+                icon="home"
+                mode="contained"
+                onPress={showDevicesDialog}
+              />
               <IconButton
                 icon="settings"
                 mode="contained"
@@ -357,40 +377,31 @@ export default function index() {
         </View>
       </View>
       <>
-        <Portal>
-          <Dialog
-            visible={isVideoTypesDialogVisible}
-            onDismiss={hideVideoTypesDialog}
-          >
-            <Dialog.Title>Image Types</Dialog.Title>
-            <Dialog.Content>
-              <RadioButton.Group
-                value={videoType}
-                onValueChange={(type: any) => setvideoType(type)}
-              >
-                <RadioButton.Item label="mov" value="mov" />
-                <RadioButton.Item label="mp4" value="mp4" />
-              </RadioButton.Group>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={hideVideoTypesDialog}>Cancel</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
+        <SelectDialog
+          data={devices.map((item) => item.name)}
+          title="Devices"
+          value={videoType}
+          setValue={setvideoType}
+          visible={isDevicesDialogVisible}
+          onDismiss={hideDevicesDialog}
+        />
+        <SelectDialog
+          data={devices.map((item) => item.name)}
+          title="Formats"
+          value={videoType}
+          setValue={setvideoType}
+          visible={isFormatsDialogVisible}
+          onDismiss={hideFormatsDialog}
+        />
+        <SelectDialog
+          data={["mov", "mp4"]}
+          title="Video Type"
+          value={videoType}
+          setValue={setvideoType}
+          visible={isVideoTypesDialogVisible}
+          onDismiss={hideVideoTypesDialog}
+        />
       </>
     </>
   );
 }
-// <List.Section>
-//   <List.Item
-//     title="Focus"
-//     right={() => <Text>{focusDepth}</Text>}
-//   />
-//   <Slider
-//     minValue={device?.minFocusDistance!}
-//     maxValue={100}
-//     step={1}
-//     value={focusDepth!}
-//     onValueChange={setfocusDepth}
-//   />
-// </List.Section>
