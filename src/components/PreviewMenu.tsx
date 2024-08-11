@@ -5,27 +5,33 @@ import { View } from "react-native";
 import { IconButton } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AssetInfo from "./AssetInfo";
+import DeleteAssetDialog from "./DeleteAssetDialog";
 
 type PreviewMenuProps = {
   asset: MediaLibrary.Asset;
-  visible: boolean;
 };
 
-export default function PreviewMenu({ asset, visible }: PreviewMenuProps) {
+export default function PreviewMenu({ asset }: PreviewMenuProps) {
   const { bottom } = useSafeAreaInsets();
-  const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
 
+  const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
   const showInfo = () => setisInfoVisible(true);
   const hideInfo = () => setisInfoVisible(false);
 
+  const [isDeleteDialogVisible, setisDeleteDialogVisible] =
+    useState<boolean>(false);
+  const showDeleteDialog = () => setisDeleteDialogVisible(true);
+  const hideDeleteDialog = () => setisDeleteDialogVisible(false);
+
   return (
     <>
-      <View style={{ paddingBottom: bottom, opacity: visible ? 0 : 1 }}>
+      <View style={{ paddingBottom: bottom }}>
         <View className="flex-row items-center justify-evenly h-[64]">
           <IconButton
             icon="share"
             onPress={() => Sharing.shareAsync(asset.uri)}
           />
+          <IconButton icon="trash-bin" onPress={showDeleteDialog} />
           <IconButton icon="information" onPress={showInfo} />
         </View>
       </View>
@@ -33,6 +39,11 @@ export default function PreviewMenu({ asset, visible }: PreviewMenuProps) {
         assetId={asset.id}
         visible={isInfoVisible}
         onDismiss={hideInfo}
+      />
+      <DeleteAssetDialog
+        asset={asset}
+        visible={isDeleteDialogVisible}
+        onDismiss={hideDeleteDialog}
       />
     </>
   );

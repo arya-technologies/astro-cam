@@ -28,8 +28,8 @@ export default function preview() {
       appBarTop.value = withSpring(-(64 + top));
       menuBottom.value = withSpring(-(64 + bottom));
     } else {
-      appBarTop.value = 0;
-      menuBottom.value = 0;
+      appBarTop.value = withSpring(0);
+      menuBottom.value = withSpring(0);
     }
     toggleFullScreen();
   };
@@ -71,7 +71,7 @@ export default function preview() {
         backgroundColor: colors.surface,
       }}
     >
-      <Animated.View style={{ top: appBarTop }} className="absolute">
+      <Animated.View style={{ top: appBarTop }} className="absolute w-full">
         <Appbar.Header mode="small" style={{ opacity: isFullScreen ? 0 : 1 }}>
           <Appbar.BackAction
             onPress={() => {
@@ -95,8 +95,13 @@ export default function preview() {
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
       />
       {asset && (
-        <Animated.View style={{ bottom: menuBottom }} className="absolute">
-          <PreviewMenu asset={asset} visible={isFullScreen} />
+        <Animated.View
+          style={{
+            bottom: menuBottom,
+          }}
+          className="absolute w-full"
+        >
+          <PreviewMenu asset={asset} />
         </Animated.View>
       )}
     </View>
