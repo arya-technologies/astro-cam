@@ -12,7 +12,7 @@ type PreviewMenuProps = {
 };
 
 export default function PreviewMenu({ asset, visible }: PreviewMenuProps) {
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
 
   const showInfo = () => setisInfoVisible(true);
@@ -20,11 +20,8 @@ export default function PreviewMenu({ asset, visible }: PreviewMenuProps) {
 
   return (
     <>
-      <View
-        className="absolute bottom-0 left-0 w-full"
-        style={{ paddingBottom: bottom, opacity: visible ? 0 : 1 }}
-      >
-        <View className="flex-row items-center justify-evenly py-4">
+      <View style={{ paddingBottom: bottom, opacity: visible ? 0 : 1 }}>
+        <View className="flex-row items-center justify-evenly h-[64]">
           <IconButton
             icon="share"
             onPress={() => Sharing.shareAsync(asset.uri)}

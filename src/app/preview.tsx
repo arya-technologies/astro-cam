@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { Appbar } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -18,6 +19,20 @@ export default function preview() {
   const [asset, setasset] = useState<MediaLibrary.Asset>();
   const [isFullScreen, setisFullScreen] = useState<boolean>(false);
   const toggleFullScreen = () => setisFullScreen(!isFullScreen);
+
+  const appBarTop = useSharedValue(0);
+  const menuBottom = useSharedValue(0);
+
+  const handleFullScreen = () => {
+    if (!isFullScreen) {
+      appBarTop.value = withSpring(-(64 + top));
+      menuBottom.value = withSpring(-(64 + bottom));
+    } else {
+      appBarTop.value = 0;
+      menuBottom.value = 0;
+    }
+    toggleFullScreen();
+  };
 
   useEffect(() => {
     (async function () {
@@ -38,7 +53,7 @@ export default function preview() {
   const renderItem = (item: MediaLibrary.Asset) => {
     return (
       <>
-        <Pressable onPress={toggleFullScreen}>
+        <Pressable onPress={handleFullScreen}>
           {item.mediaType === "video" ? (
             <VideoPreview key={item.id} videoUri={item.uri} />
           ) : (
@@ -56,15 +71,17 @@ export default function preview() {
         backgroundColor: colors.surface,
       }}
     >
-      <Appbar.Header mode="small" style={{ opacity: isFullScreen ? 0 : 1 }}>
-        <Appbar.BackAction
-          onPress={() => {
-            router.back();
-          }}
-        />
-        <Appbar.Content title="Preview" />
-        <Appbar.Action icon="ellipsis-vertical" />
-      </Appbar.Header>
+      <Animated.View style={{ top: appBarTop }} className="absolute">
+        <Appbar.Header mode="small" style={{ opacity: isFullScreen ? 0 : 1 }}>
+          <Appbar.BackAction
+            onPress={() => {
+              router.back();
+            }}
+          />
+          <Appbar.Content title="Preview" />
+          <Appbar.Action icon="ellipsis-vertical" />
+        </Appbar.Header>
+      </Animated.View>
       <FlatList
         ref={flatlist}
         horizontal
@@ -74,10 +91,14 @@ export default function preview() {
         data={assets}
         initialNumToRender={1}
         renderItem={({ item }) => renderItem(item)}
-        className="w-full h-full absolute h-full -z-10"
+        className="w-full h-full absolute -z-10"
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
       />
-      {asset && <PreviewMenu asset={asset} visible={isFullScreen} />}
+      {asset && (
+        <Animated.View style={{ bottom: menuBottom }} className="absolute">
+          <PreviewMenu asset={asset} visible={isFullScreen} />
+        </Animated.View>
+      )}
     </View>
   );
 }
