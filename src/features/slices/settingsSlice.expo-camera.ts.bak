@@ -1,22 +1,26 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { CameraDevice, CameraDeviceFormat } from "react-native-vision-camera";
+import {
+  CameraMode,
+  ImageType,
+  VideoQuality,
+  VideoStabilization,
+} from "expo-camera";
 
 export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
-
-export type CameraModeTypes = "picture" | "video";
-export type ImageTypes = "raw" | "png" | "jpg";
-export type VideoTypes = "mov" | "mp4";
+export type PictureSizeProps = "3000x3000";
+export type RatioProps = "1:1";
 
 type AppearanceProps = {
   theme: ThemeProps;
 };
 type ControlsProps = {
-  mode: CameraModeTypes;
-  device?: CameraDevice;
-  format?: CameraDeviceFormat;
-  imageTyp?: ImageTypes;
-  videoType?: VideoTypes;
+  mode: CameraMode;
+  pictureSize: PictureSizeProps;
+  ratio: RatioProps;
+  imageType: ImageType;
+  videoQuality: VideoQuality;
+  videoStabilization: VideoStabilization;
 };
 
 export interface SettingsProps {
@@ -30,6 +34,11 @@ const initialState: SettingsProps = {
   },
   controls: {
     mode: "picture",
+    pictureSize: "3000x3000",
+    ratio: "1:1",
+    imageType: "png",
+    videoQuality: "1080p",
+    videoStabilization: "off",
   },
 };
 
@@ -44,11 +53,12 @@ export const settingsSlice = createSlice({
       appearance.theme = payload.theme;
     },
     setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
-      controls.device = payload.device;
-      controls.format = payload.format;
       controls.mode = payload.mode;
-      controls.imageTyp = payload.imageTyp;
-      controls.videoType = payload.videoType;
+      controls.imageType = payload.imageType;
+      controls.pictureSize = payload.pictureSize;
+      controls.ratio = payload.ratio;
+      controls.videoQuality = payload.videoQuality;
+      controls.videoStabilization = payload.videoStabilization;
     },
   },
 });

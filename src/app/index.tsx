@@ -1,29 +1,45 @@
+import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
+import SelectDeviceDialog from "@/components/SelectDeviceDialog";
+import SelectDialog from "@/components/SelectDialog";
+import SelectFormatDialog from "@/components/SelectFormatDialog";
+import Slider from "@/components/Slider";
+import { RootState } from "@/features/store";
+import { useAppState } from "@react-native-community/hooks";
+import * as FileSystem from "expo-file-system";
+import * as Linking from "expo-linking";
+import * as MediaLibrary from "expo-media-library";
+import { router } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
+import { Button, IconButton, List, Text, withTheme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Camera,
   CameraDevice,
-  CameraDeviceFormat,
+  CameraProps,
   useCameraDevice,
   useCameraDevices,
   useCameraFormat,
   useCameraPermission,
 } from "react-native-vision-camera";
-import { useAppState } from "@react-native-community/hooks";
-import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import * as MediaLibrary from "expo-media-library";
-import * as FileSystem from "expo-file-system";
-import * as Linking from "expo-linking";
-import { Image, Pressable, TouchableOpacity, View } from "react-native";
-import { Button, IconButton, List, Text } from "react-native-paper";
-import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/features/store";
-import Slider from "@/components/Slider";
-import SelectDialog from "@/components/SelectDialog";
-import SelectFormatDialog from "@/components/SelectFormatDialog";
-import SelectDeviceDialog from "@/components/SelectDeviceDialog";
-import { DevMenu } from "expo-dev-client";
+import Reanimated, {
+  interpolate,
+  useAnimatedProps,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import Permissions from "@/components/Permissions";
+import {
+  CameraModeTypes,
+  ImageTypes,
+  setcontrols,
+  VideoTypes,
+} from "@/features/slices/settingsSlice";
+
+const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
+Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
 
 export default function index() {
   const { colors } = useAppTheme();
@@ -40,19 +56,18 @@ export default function index() {
 
   const camera = useRef<Camera>(null);
   const devices = useCameraDevices();
-  const [device, setdevice] = useState<CameraDevice | undefined>(devices[0]);
-  // const device: CameraDevice | undefined = useCameraDevice("back", {
-  //   // physicalDevices: [
-  //   //   "ultra-wide-angle-camera",
-  //   //   "wide-angle-camera",
-  //   //   "telephoto-camera",
-  //   // ],
-  // });
-  const usbDevice = useCameraDevice("external");
+  const [device, setdevice] = useState<CameraDevice>(
+    controls.device || devices[0],
+  );
 
-  const [mode, setmode] = useState<"picture" | "video">("picture");
-  const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
-  const [videoType, setvideoType] = useState<"mov" | "mp4">("mov");
+  const [mode, setmode] = useState<CameraModeTypes>(controls.mode || "picture");
+  // const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
+  const [imageType, setimageType] = useState<ImageTypes>(
+    controls.imageTyp || "raw",
+  );
+  const [videoType, setvideoType] = useState<VideoTypes>(
+    controls.videoType || "mov",
+  );
 
   const [videoRes, setvideoRes] = useState<number>(
     device?.formats[0].videoHeight!,
@@ -67,15 +82,39 @@ export default function index() {
       videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
     },
   ]);
-  const format = mode === "video" ? videoFormat : imageFormat;
+  const format =
+    controls.format || mode === "video" ? videoFormat : imageFormat;
 
   const [iso, setiso] = useState(format?.minISO);
   const [fps, setfps] = useState(format?.maxFps);
   const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
-  const [exposure, setexposure] = useState(0);
 
-  useEffect(() => {}, []);
+  const exposureSlider = useSharedValue(0);
+  const exposure = useDerivedValue(() => {
+    if (device === null) return 0;
+    return interpolate(
+      exposureSlider.value,
+      [-1, 0, 1],
+      [device.minExposure, 0, device.maxExposure],
+    );
+  }, [exposureSlider, device]);
+
+  const zoomSlider = useSharedValue(0);
+  const zoom = useDerivedValue(() => {
+    if (device === null) return 0;
+    return interpolate(
+      zoomSlider.value,
+      [-1, 0, 1],
+      [device.minZoom, 0, device.maxZoom],
+    );
+  }, [zoomSlider, device]);
+  // const zoom = useSharedValue(device?.neutralZoom);
+
+  const animatedProps = useAnimatedProps<CameraProps>(
+    () => ({ zoom: zoom.value, exposure: exposure.value }),
+    [zoom, exposure],
+  );
 
   const [lastCapturedUri, setlastCapturedUri] = useState<string>();
   const [isrecording, setisrecording] = useState<boolean>(false);
@@ -118,54 +157,16 @@ export default function index() {
     })();
   }, [mediaPermission]);
 
-  // useEffect(() => {
-  //   dispatch(
-  //     setcontrols({
-  //       mode,
-  //       imageType,
-  //       pictureSize,
-  //       ratio,
-  //       videoQuality,
-  //       videoStabilization,
-  //     }),
-  //   );
-  // }, [mode, imageType, pictureSize, ratio, videoQuality, videoStabilization]);
-  //
+  useEffect(() => {
+    dispatch(setcontrols({ device, format, mode, videoType }));
+  }, [device, format, mode, imageType, videoType]);
 
-  const requestPermissions = () => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-    if (!mediaPermission?.granted) {
-      requestMediaPermission();
-    }
-  };
-
-  if (!hasPermission) {
-    const handleRequestPermissions = () => {
-      if (!hasPermission && mediaPermission?.canAskAgain) {
-        requestPermissions();
-      } else {
-        // Linking.openSettings();
-        Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
-      }
-    };
-    return (
-      <View
-        className="h-full flex-1 items-center justify-center space-y-4"
-        style={{ backgroundColor: colors.surface }}
-      >
-        <Text>We need your permission to show the camera</Text>
-        <Button onPress={handleRequestPermissions} mode="elevated">
-          Grant Permission
-        </Button>
-      </View>
-    );
+  if (!hasPermission || !mediaPermission?.granted) {
+    <Permissions />;
   }
 
   const toggleCameraMode = () => {
     setmode((current) => (current === "picture" ? "video" : "picture"));
-    // setzoom(device?.neutralZoom);
   };
 
   const handleCapture = async () => {
@@ -194,26 +195,6 @@ export default function index() {
       }
     }
   };
-  async function addImage(imageUri: string) {
-    const imagesDir = "AstroCam";
-    const asset = await MediaLibrary.createAssetAsync(imageUri);
-    const album = await MediaLibrary.getAlbumAsync(imagesDir);
-    if (!album) {
-      await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
-    } else {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-    }
-  }
-  async function addVideo(videoUri: string) {
-    const videosDir = "AstroCam";
-    const asset = await MediaLibrary.createAssetAsync(videoUri);
-    const album = await MediaLibrary.getAlbumAsync(videosDir);
-    if (!album) {
-      await MediaLibrary.createAlbumAsync(videosDir, asset, false);
-    } else {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-    }
-  }
 
   return (
     <>
@@ -226,19 +207,17 @@ export default function index() {
         }}
       >
         <View style={{}} className="items-center">
-          <Camera
-            isActive={false}
+          <AnimatedCamera
+            animatedProps={animatedProps}
+            isActive={isActive}
             ref={camera}
             device={device!}
             format={format}
-            fps={fps}
             photo={true}
             video={true}
             audio={false}
             photoHdr={false}
             videoHdr={false}
-            zoom={zoom}
-            exposure={exposure}
             lowLightBoost={false}
             isMirrored={false}
             enableLocation={false}
@@ -262,7 +241,7 @@ export default function index() {
                     onPress={showVideoTypesDialog}
                   />
                   <IconButton
-                    icon="home"
+                    icon="resize"
                     mode="contained"
                     onPress={showFormatsDialog}
                   />
@@ -270,7 +249,7 @@ export default function index() {
               ) : (
                 <>
                   <IconButton
-                    icon="image"
+                    icon="cog"
                     mode="contained"
                     onPress={showPictureTypesDialog}
                   />
@@ -302,24 +281,27 @@ export default function index() {
               <List.Section>
                 <List.Item
                   title="Exposure"
-                  right={() => <Text>{exposure}</Text>}
+                  right={() => <Text>{exposure.value}</Text>}
                 />
                 <Slider
-                  minValue={device?.minExposure!}
-                  maxValue={device?.maxExposure!}
+                  minValue={device.minExposure}
+                  maxValue={device.maxExposure}
                   step={1}
-                  value={exposure!}
-                  onValueChange={setexposure}
+                  value={exposure.value}
+                  onValueChange={(value) => (exposureSlider.value = value)}
                 />
               </List.Section>
               <List.Section>
-                <List.Item title="Zoom" right={() => <Text>{zoom}</Text>} />
+                <List.Item
+                  title="Zoom"
+                  right={() => <Text>{zoom.value}</Text>}
+                />
                 <Slider
-                  minValue={device?.minZoom!}
-                  maxValue={device?.maxZoom!}
+                  minValue={device.minZoom}
+                  maxValue={device.maxZoom}
                   step={1}
-                  value={zoom}
-                  onValueChange={setzoom}
+                  value={zoom.value}
+                  onValueChange={(value) => (zoomSlider.value = value)}
                 />
               </List.Section>
             </View>
@@ -386,7 +368,36 @@ export default function index() {
           visible={isVideoTypesDialogVisible}
           onDismiss={hideVideoTypesDialog}
         />
+        <SelectDialog
+          data={["raw", "png", "jpg"]}
+          title="Image Type"
+          value={imageType}
+          setValue={setimageType}
+          visible={isPictureTypesDialogVisible}
+          onDismiss={hidePictureTypesDialog}
+        />
       </>
     </>
   );
+}
+
+async function addImage(imageUri: string) {
+  const imagesDir = "AstroCam";
+  const asset = await MediaLibrary.createAssetAsync(imageUri);
+  const album = await MediaLibrary.getAlbumAsync(imagesDir);
+  if (!album) {
+    await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
+  } else {
+    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+  }
+}
+async function addVideo(videoUri: string) {
+  const videosDir = "AstroCam";
+  const asset = await MediaLibrary.createAssetAsync(videoUri);
+  const album = await MediaLibrary.getAlbumAsync(videosDir);
+  if (!album) {
+    await MediaLibrary.createAlbumAsync(videosDir, asset, false);
+  } else {
+    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+  }
 }

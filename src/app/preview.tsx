@@ -4,6 +4,8 @@ import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
+import * as StatusBar from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import { Appbar } from "react-native-paper";
@@ -29,6 +31,8 @@ export default function preview() {
   const menuBottom = useSharedValue(0);
 
   const handleFullScreen = () => {
+    // StatusBar.setStatusBarHidden(isFullScreen);
+    // NavigationBar.setVisibilityAsync(isFullScreen ? "hidden" : "visible");
     if (!isFullScreen) {
       appBarTop.value = withSpring(-(64 + top));
       menuBottom.value = withSpring(-(64 + bottom));
@@ -57,7 +61,9 @@ export default function preview() {
 
   const handleDelete = async () => {
     if (asset) {
-      await MediaLibrary.deleteAssetsAsync(asset);
+      await MediaLibrary.deleteAssetsAsync([asset.id])
+        .then(() => console.log(`deleted ${asset.filename}`))
+        .catch((err) => console.log(err));
       const updatedAssets = assets.filter((item) => item.id !== asset.id);
       setassets(updatedAssets);
     }
@@ -107,6 +113,7 @@ export default function preview() {
         className="w-full h-full absolute -z-10"
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
         itemLayoutAnimation={LinearTransition}
+        keyExtractor={(item) => item.id}
       />
       {asset && (
         <Animated.View
