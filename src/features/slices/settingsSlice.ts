@@ -17,6 +17,8 @@ type ControlsProps = {
   format?: CameraDeviceFormat;
   imageTyp?: ImageTypes;
   videoType?: VideoTypes;
+  videoCodec?: "h264" | "h265";
+  videoBitRate?: number | "low" | "high";
 };
 
 export interface SettingsProps {
@@ -49,6 +51,8 @@ export const settingsSlice = createSlice({
       controls.mode = payload.mode;
       controls.imageTyp = payload.imageTyp;
       controls.videoType = payload.videoType;
+      controls.videoCodec = payload.videoCodec;
+      controls.videoBitRate = payload.videoBitRate;
     },
   },
 });

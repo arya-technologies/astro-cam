@@ -1,44 +1,41 @@
+import CameraSlidersMenu from "@/components/CameraSlidersMenu";
+import Permissions from "@/components/Permissions";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import SelectDeviceDialog from "@/components/SelectDeviceDialog";
 import SelectDialog from "@/components/SelectDialog";
 import SelectFormatDialog from "@/components/SelectFormatDialog";
-import Slider from "@/components/Slider";
-import { RootState } from "@/features/store";
-import { useAppState } from "@react-native-community/hooks";
-import * as FileSystem from "expo-file-system";
-import * as Linking from "expo-linking";
-import * as MediaLibrary from "expo-media-library";
-import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Image, Pressable, TouchableOpacity, View } from "react-native";
-import { Button, IconButton, List, Text, withTheme } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  Camera,
-  CameraDevice,
-  CameraProps,
-  useCameraDevice,
-  useCameraDevices,
-  useCameraFormat,
-  useCameraPermission,
-} from "react-native-vision-camera";
-import { useDispatch, useSelector } from "react-redux";
-import Reanimated, {
-  interpolate,
-  useAnimatedProps,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import Permissions from "@/components/Permissions";
+import VirticalCameraMenu from "@/components/VirticalCameraMenu";
 import {
   CameraModeTypes,
   ImageTypes,
   setcontrols,
   VideoTypes,
 } from "@/features/slices/settingsSlice";
-import VirticalCameraMenu from "@/components/VirticalCameraMenu";
-import CameraSlidersMenu from "@/components/CameraSlidersMenu";
+import { RootState } from "@/features/store";
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import { useAppState } from "@react-native-community/hooks";
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
+import { router } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
+import { IconButton } from "react-native-paper";
+import Reanimated, {
+  interpolate,
+  useAnimatedProps,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  Camera,
+  CameraDevice,
+  CameraProps,
+  useCameraDevices,
+  useCameraFormat,
+  useCameraPermission,
+} from "react-native-vision-camera";
+import { useDispatch, useSelector } from "react-redux";
 
 const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
@@ -51,6 +48,11 @@ export default function index() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
+
+  useEffect(() => {
+    const test = CameraRoll.getAlbums();
+    console.log(test);
+  }, []);
 
   // const isFocused = useIsFocused()
   const appState = useAppState();
@@ -177,7 +179,7 @@ export default function index() {
 
   const handleCapture = async () => {
     if (mode === "picture") {
-      const image = await camera.current?.takePhoto({});
+      const image = await camera.current?.takePhoto();
       if (image) {
         const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
         setlastCapturedUri(imageUri);
