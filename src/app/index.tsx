@@ -38,6 +38,7 @@ import {
   VideoTypes,
 } from "@/features/slices/settingsSlice";
 import VirticalCameraMenu from "@/components/VirticalCameraMenu";
+import CameraSlidersMenu from "@/components/CameraSlidersMenu";
 
 const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
@@ -86,10 +87,20 @@ export default function index() {
   const format =
     controls.format || mode === "video" ? videoFormat : imageFormat;
 
-  const [iso, setiso] = useState(format?.minISO);
+  //  const [iso, setiso] = useState(format?.minISO);
   const [fps, setfps] = useState(format?.maxFps);
   const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
+
+  const isoSlider = useSharedValue(0);
+  const iso = useDerivedValue(() => {
+    if (format === undefined) return 0;
+    return interpolate(
+      isoSlider.value,
+      [-1, 0, 1],
+      [format.minISO, 0, format.maxISO],
+    );
+  }, [isoSlider, device]);
 
   const exposureSlider = useSharedValue(0);
   const exposure = useDerivedValue(() => {
@@ -240,45 +251,17 @@ export default function index() {
               onShowPictureTypesDialog={showPictureTypesDialog}
               onShowVideoTypesDialog={showVideoTypesDialog}
             />
-            <View className="flex-grow justify-end">
-              {mode === "video" ? <></> : <></>}
-              <List.Section>
-                <List.Item title="Iso" right={() => <Text>{iso}</Text>} />
-                <Slider
-                  minValue={format?.minISO!}
-                  maxValue={format?.maxISO!}
-                  step={1}
-                  value={iso!}
-                  onValueChange={setiso}
-                />
-              </List.Section>
-              <List.Section>
-                <List.Item
-                  title="Exposure"
-                  right={() => <Text>{exposure.value}</Text>}
-                />
-                <Slider
-                  minValue={device.minExposure}
-                  maxValue={device.maxExposure}
-                  step={1}
-                  value={exposure.value}
-                  onValueChange={(value) => (exposureSlider.value = value)}
-                />
-              </List.Section>
-              <List.Section>
-                <List.Item
-                  title="Zoom"
-                  right={() => <Text>{zoom.value}</Text>}
-                />
-                <Slider
-                  minValue={device.minZoom}
-                  maxValue={device.maxZoom}
-                  step={1}
-                  value={zoom.value}
-                  onValueChange={(value) => (zoomSlider.value = value)}
-                />
-              </List.Section>
-            </View>
+            <CameraSlidersMenu
+              mode={mode}
+              device={device}
+              format={format!}
+              iso={iso}
+              exposure={exposure}
+              zoom={zoom}
+              isoSlider={isoSlider}
+              exposureSlider={exposureSlider}
+              zoomSlider={zoomSlider}
+            />
           </View>
           <View className="flex-row items-center justify-evenly py-4">
             <Pressable onPress={() => router.navigate("preview")}>
