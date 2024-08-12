@@ -27,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "CAMERA",
+        "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.ACCESS_MEDIA_LOCATION",

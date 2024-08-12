@@ -177,7 +177,7 @@ export default function index() {
       if (image) {
         const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
         setlastCapturedUri(imageUri);
-        addImage(imageUri);
+        addAsset(imageUri);
       }
     } else if (mode === "video") {
       if (!isrecording) {
@@ -187,7 +187,7 @@ export default function index() {
           onRecordingFinished: (video) => {
             const videoUri = `${FileSystem.cacheDirectory}${video.path.split("/").pop()}`;
             setlastCapturedUri(videoUri);
-            addVideo(videoUri);
+            addAsset(videoUri);
           },
           onRecordingError: (error) => console.log("onRecordingError", error),
         });
@@ -326,22 +326,12 @@ export default function index() {
   );
 }
 
-async function addImage(imageUri: string) {
+async function addAsset(uri: string) {
   const imagesDir = "AstroCam";
-  const asset = await MediaLibrary.createAssetAsync(imageUri);
+  const asset = await MediaLibrary.createAssetAsync(uri);
   const album = await MediaLibrary.getAlbumAsync(imagesDir);
   if (!album) {
     await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
-  } else {
-    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-  }
-}
-async function addVideo(videoUri: string) {
-  const videosDir = "AstroCam";
-  const asset = await MediaLibrary.createAssetAsync(videoUri);
-  const album = await MediaLibrary.getAlbumAsync(videosDir);
-  if (!album) {
-    await MediaLibrary.createAlbumAsync(videosDir, asset, false);
   } else {
     await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
   }
