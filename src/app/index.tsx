@@ -97,8 +97,8 @@ export default function index() {
     if (format === undefined) return 0;
     return interpolate(
       isoSlider.value,
-      [-1, 0, 1],
-      [format.minISO, 0, format.maxISO],
+      [0, 100],
+      [format.minISO, format.maxISO],
     );
   }, [isoSlider, device]);
 
@@ -107,8 +107,8 @@ export default function index() {
     if (device === null) return 0;
     return interpolate(
       exposureSlider.value,
-      [-1, 0, 1],
-      [device.minExposure, 0, device.maxExposure],
+      [0, 100],
+      [device.minExposure, device.maxExposure],
     );
   }, [exposureSlider, device]);
 
@@ -117,8 +117,8 @@ export default function index() {
     if (device === null) return 0;
     return interpolate(
       zoomSlider.value,
-      [-1, 0, 1],
-      [device.minZoom, 0, device.maxZoom],
+      [0, 100],
+      [device.minZoom, device.maxZoom],
     );
   }, [zoomSlider, device]);
   // const zoom = useSharedValue(device?.neutralZoom);
@@ -253,8 +253,6 @@ export default function index() {
             />
             <CameraSlidersMenu
               mode={mode}
-              device={device}
-              format={format!}
               iso={iso}
               exposure={exposure}
               zoom={zoom}
@@ -299,8 +297,8 @@ export default function index() {
         <SelectFormatDialog
           title="Format"
           videoRes={videoRes}
-          minRes={device?.formats.pop()?.videoHeight!}
-          maxRes={device?.formats[0].videoHeight!}
+          minRes={device.formats.at(-1)?.videoHeight!}
+          maxRes={device.formats[0].videoHeight!}
           setVideoRes={setvideoRes}
           fps={fps!}
           minFps={format?.minFps!}
@@ -312,7 +310,7 @@ export default function index() {
         <SelectDeviceDialog
           data={devices}
           title="Devices"
-          value={device?.id!}
+          value={device.id}
           setValue={setdevice}
           visible={isDevicesDialogVisible}
           onDismiss={hideDevicesDialog}

@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Text } from "react-native";
 import { CameraModeTypes } from "@/features/slices/settingsSlice";
+import React from "react";
+import { Text, View } from "react-native";
 import { List } from "react-native-paper";
 import Slider from "./Slider";
-import { CameraDevice, CameraDeviceFormat } from "react-native-vision-camera";
 // import { SharedValue } from "react-native-reanimated";
 
 interface SharedValue<Value = number> {
@@ -21,8 +20,6 @@ type CameraSlidersMenuProps = {
   iso: SharedValue;
   exposure: SharedValue;
   zoom: SharedValue;
-  device: CameraDevice;
-  format: CameraDeviceFormat;
   isoSlider: SharedValue;
   exposureSlider: SharedValue;
   zoomSlider: SharedValue;
@@ -33,8 +30,6 @@ export default function CameraSlidersMenu({
   iso,
   exposure,
   zoom,
-  device,
-  format,
   isoSlider,
   exposureSlider,
   zoomSlider,
@@ -45,9 +40,6 @@ export default function CameraSlidersMenu({
       <List.Section>
         <List.Item title="Iso" right={() => <Text>{iso.value}</Text>} />
         <Slider
-          minValue={format.minISO}
-          maxValue={format.maxISO}
-          step={1}
           value={iso.value}
           onValueChange={(value) => (isoSlider.value = value)}
         />
@@ -58,9 +50,6 @@ export default function CameraSlidersMenu({
           right={() => <Text>{exposure.value}</Text>}
         />
         <Slider
-          minValue={device.minExposure}
-          maxValue={device.maxExposure}
-          step={1}
           value={exposure.value}
           onValueChange={(value) => (exposureSlider.value = value)}
         />
@@ -68,9 +57,6 @@ export default function CameraSlidersMenu({
       <List.Section>
         <List.Item title="Zoom" right={() => <Text>{zoom.value}</Text>} />
         <Slider
-          minValue={device.minZoom}
-          maxValue={device.maxZoom}
-          step={1}
           value={zoom.value}
           onValueChange={(value) => (zoomSlider.value = value)}
         />
