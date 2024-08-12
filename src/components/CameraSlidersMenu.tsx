@@ -55,7 +55,7 @@ export default function CameraSlidersMenu({
         />
       </List.Section>
       <List.Section>
-        <List.Item title="Zoom" right={() => <Text>{zoom.value}</Text>} />
+        <List.Item title="Zoom" right={() => <Text>{zoom.value}x</Text>} />
         <Slider
           value={zoom.value}
           onValueChange={(value) => (zoomSlider.value = value)}

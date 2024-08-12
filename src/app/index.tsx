@@ -63,7 +63,6 @@ export default function index() {
   );
 
   const [mode, setmode] = useState<CameraModeTypes>(controls.mode || "picture");
-  // const [zoom, setzoom] = useState<number>(device?.neutralZoom!);
   const [imageType, setimageType] = useState<ImageTypes>(
     controls.imageTyp || "raw",
   );
@@ -74,9 +73,6 @@ export default function index() {
   const [videoRes, setvideoRes] = useState<number>(
     device?.formats[0].videoHeight!,
   );
-  // const [format, setformat] = useState<CameraDeviceFormat | undefined>(
-  //   device?.formats[0],
-  // );
   const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
   const videoFormat = useCameraFormat(device, [
     {
@@ -87,7 +83,6 @@ export default function index() {
   const format =
     controls.format || mode === "video" ? videoFormat : imageFormat;
 
-  //  const [iso, setiso] = useState(format?.minISO);
   const [fps, setfps] = useState(format?.maxFps);
   const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
@@ -102,7 +97,7 @@ export default function index() {
     );
   }, [isoSlider, device]);
 
-  const exposureSlider = useSharedValue(0);
+  const exposureSlider = useSharedValue(50);
   const exposure = useDerivedValue(() => {
     if (device === null) return 0;
     return interpolate(
@@ -121,7 +116,6 @@ export default function index() {
       [device.minZoom, device.maxZoom],
     );
   }, [zoomSlider, device]);
-  // const zoom = useSharedValue(device?.neutralZoom);
 
   const animatedProps = useAnimatedProps<CameraProps>(
     () => ({ zoom: zoom.value, exposure: exposure.value }),
