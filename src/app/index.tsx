@@ -12,7 +12,6 @@ import {
   VideoTypes,
 } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
-import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { useAppState } from "@react-native-community/hooks";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
@@ -48,11 +47,6 @@ export default function index() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
-
-  useEffect(() => {
-    const test = CameraRoll.getAlbums();
-    console.log(test);
-  }, []);
 
   // const isFocused = useIsFocused()
   const appState = useAppState();
