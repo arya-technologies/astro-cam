@@ -37,6 +37,7 @@ import {
   setcontrols,
   VideoTypes,
 } from "@/features/slices/settingsSlice";
+import VirticalCameraMenu from "@/components/VirticalCameraMenu";
 
 const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
@@ -232,40 +233,13 @@ export default function index() {
         </View>
         <View className="flex-grow">
           <View className="flex-row flex-grow">
-            <View className="items-center justify-end flex-grow p-2 space-y-2">
-              {mode === "video" ? (
-                <>
-                  <IconButton
-                    icon="image"
-                    mode="contained"
-                    onPress={showVideoTypesDialog}
-                  />
-                  <IconButton
-                    icon="resize"
-                    mode="contained"
-                    onPress={showFormatsDialog}
-                  />
-                </>
-              ) : (
-                <>
-                  <IconButton
-                    icon="cog"
-                    mode="contained"
-                    onPress={showPictureTypesDialog}
-                  />
-                </>
-              )}
-              <IconButton
-                icon="home"
-                mode="contained"
-                onPress={showDevicesDialog}
-              />
-              <IconButton
-                icon="settings"
-                mode="contained"
-                onPress={() => router.navigate("settings")}
-              />
-            </View>
+            <VirticalCameraMenu
+              mode={mode}
+              onShowDevicesDialog={showDevicesDialog}
+              onShowFormatsDialog={showFormatsDialog}
+              onShowPictureTypesDialog={showPictureTypesDialog}
+              onShowVideoTypesDialog={showVideoTypesDialog}
+            />
             <View className="flex-grow justify-end">
               {mode === "video" ? <></> : <></>}
               <List.Section>
