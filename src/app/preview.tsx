@@ -5,10 +5,14 @@ import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, Pressable, View } from "react-native";
+import { Dimensions, Pressable, View } from "react-native";
 import { Appbar } from "react-native-paper";
+import Animated, {
+  LinearTransition,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -51,6 +55,14 @@ export default function preview() {
     })();
   }, []);
 
+  const handleDelete = async () => {
+    if (asset) {
+      await MediaLibrary.deleteAssetsAsync(asset);
+      const updatedAssets = assets.filter((item) => item.id !== asset.id);
+      setassets(updatedAssets);
+    }
+  };
+
   const renderItem = (item: MediaLibrary.Asset) => {
     return (
       <>
@@ -83,7 +95,7 @@ export default function preview() {
           <Appbar.Action icon="ellipsis-vertical" />
         </Appbar.Header>
       </Animated.View>
-      <FlatList
+      <Animated.FlatList
         ref={flatlist}
         horizontal
         snapToAlignment="center"
@@ -94,6 +106,7 @@ export default function preview() {
         renderItem={({ item }) => renderItem(item)}
         className="w-full h-full absolute -z-10"
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
+        itemLayoutAnimation={LinearTransition}
       />
       {asset && (
         <Animated.View
@@ -102,7 +115,7 @@ export default function preview() {
           }}
           className="absolute w-full"
         >
-          <PreviewMenu asset={asset} />
+          <PreviewMenu asset={asset} handleDelete={handleDelete} />
         </Animated.View>
       )}
     </View>

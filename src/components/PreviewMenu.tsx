@@ -9,9 +9,10 @@ import DeleteAssetDialog from "./DeleteAssetDialog";
 
 type PreviewMenuProps = {
   asset: MediaLibrary.Asset;
+  handleDelete: () => void;
 };
 
-export default function PreviewMenu({ asset }: PreviewMenuProps) {
+export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
   const { bottom } = useSafeAreaInsets();
 
   const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
@@ -44,6 +45,7 @@ export default function PreviewMenu({ asset }: PreviewMenuProps) {
         asset={asset}
         visible={isDeleteDialogVisible}
         onDismiss={hideDeleteDialog}
+        onDelete={handleDelete}
       />
     </>
   );
