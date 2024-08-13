@@ -37,6 +37,7 @@ import {
   useCameraPermission,
 } from "react-native-vision-camera";
 import { useDispatch, useSelector } from "react-redux";
+import CameraMainMenu from "@/components/CameraMainMenu";
 
 const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
@@ -122,8 +123,8 @@ export default function index() {
     [zoom, exposure],
   );
 
-  const [lastCapturedUri, setlastCapturedUri] = useState<string>();
-  const [isrecording, setisrecording] = useState<boolean>(false);
+  const [lastCapturedUri, setlastCapturedUri] = useState<string>("");
+  const [isRecording, setisRecording] = useState<boolean>(false);
 
   const [isDevicesDialogVisible, setisDevicesDialogVisible] =
     useState<boolean>(false);
@@ -181,28 +182,30 @@ export default function index() {
         path: "/storage/emulated/0/Pictures/AstroCam/",
       });
       if (image) {
-        const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
-        setlastCapturedUri(imageUri);
+        setlastCapturedUri(`file://${image.path}`);
+        // const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
+        // setlastCapturedUri(imageUri);
         // addAsset(imageUri);
       }
     } else if (mode === "video") {
-      if (!isrecording) {
-        setisrecording(true);
+      if (!isRecording) {
+        setisRecording(true);
         camera.current?.startRecording({
           videoCodec,
           videoBitRate,
           fileType: videoType,
           path: "/storage/emulated/0/Pictures/AstroCam/",
           onRecordingFinished: (video) => {
-            const videoUri = `${FileSystem.cacheDirectory}${video.path.split("/").pop()}`;
-            setlastCapturedUri(videoUri);
+            setlastCapturedUri(`file://${video.path}`);
+            // const videoUri = `${FileSystem.cacheDirectory}${video.path.split("/").pop()}`;
+            // setlastCapturedUri(videoUri);
             // addAsset(videoUri);
           },
           onRecordingError: (error) => console.log("onRecordingError", error),
         });
       } else {
         camera.current?.stopRecording();
-        setisrecording(false);
+        setisRecording(false);
       }
     }
   };
@@ -260,36 +263,13 @@ export default function index() {
               zoomSlider={zoomSlider}
             />
           </View>
-          <View className="flex-row items-center justify-evenly py-4">
-            <Pressable onPress={() => router.navigate("preview")}>
-              <Image
-                source={
-                  lastCapturedUri
-                    ? {
-                        uri: lastCapturedUri,
-                      }
-                    : require("../../assets/icon.png")
-                }
-                className="w-16 h-16 rounded-full"
-              />
-            </Pressable>
-            <TouchableOpacity
-              onPress={handleCapture}
-              className="w-20 h-20 rounded-full"
-              style={{
-                backgroundColor: isrecording
-                  ? colors.scrim
-                  : colors.onSurfaceVariant,
-                borderWidth: 4,
-                borderColor: colors.outline,
-              }}
-            />
-            <IconButton
-              size={40}
-              icon={mode === "video" ? "camera" : "videocam"}
-              onPress={toggleCameraMode}
-            />
-          </View>
+          <CameraMainMenu
+            mode={mode}
+            onCapture={handleCapture}
+            isRecording={isRecording}
+            lastCapturedUri={lastCapturedUri}
+            onToggleCameraMode={toggleCameraMode}
+          />
         </View>
       </View>
       <>
