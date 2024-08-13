@@ -47,13 +47,6 @@
     "plugins": [
       "expo-router",
       [
-        "react-native-permissions",
-        {
-          // Add setup_permissions to your Podfile (see iOS setup - steps 1, 2 and 3)
-          "iosPermissions": ["Camera"]
-        }
-      ],
-      [
         "react-native-vision-camera",
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
