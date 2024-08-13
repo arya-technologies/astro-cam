@@ -242,7 +242,7 @@ export default function index() {
             enableFpsGraph
             photoQualityBalance="quality"
             videoStabilizationMode="off"
-            resizeMode="contain"
+            resizeMode="cover"
             androidPreviewViewType="surface-view"
             className="w-[95vw] h-[95vw] my-[5vw]"
           />

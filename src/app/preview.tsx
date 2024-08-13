@@ -8,7 +8,7 @@ import * as StatusBar from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
-import { Appbar } from "react-native-paper";
+import { Appbar, IconButton } from "react-native-paper";
 import Animated, {
   interpolate,
   LinearTransition,
@@ -18,12 +18,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AssetInfo from "@/components/AssetInfo";
+import Slider from "@/components/Slider";
+import { useVideoPlayer } from "expo-video";
 
 export default function preview() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
   const { width, height } = Dimensions.get("screen");
-  const flatlist = useRef(null);
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
   const [asset, setasset] = useState<MediaLibrary.Asset>();
@@ -58,20 +59,6 @@ export default function preview() {
     }
   };
 
-  const renderItem = (item: MediaLibrary.Asset) => {
-    return (
-      <>
-        <Pressable onPress={handleFullScreen} style={{ width, height }}>
-          {item.mediaType === "video" ? (
-            <VideoPreview key={item.id} videoUri={item.uri} />
-          ) : (
-            <ImagePreview key={item.id} imageUri={item.uri} />
-          )}
-        </Pressable>
-      </>
-    );
-  };
-
   const slideY = useSharedValue(0);
   const topSlideAnimation = useAnimatedStyle(
     () => ({
@@ -96,6 +83,37 @@ export default function preview() {
     toggleFullScreen();
   };
 
+  const [isplaying, setisPlaying] = useState<boolean>(false);
+  const player = useVideoPlayer(asset?.uri!, (player) => {
+    // player.loop = true;
+  });
+  useEffect(() => {
+    const subscription = player.addListener(
+      "playingChange",
+      (isplaying: boolean) => {
+        setisPlaying(isplaying);
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
+
+  const renderItem = (item: MediaLibrary.Asset) => {
+    return (
+      <>
+        <Pressable onPress={handleFullScreen} style={{ width, height }}>
+          {item.mediaType === "video" ? (
+            <VideoPreview key={item.id} player={player} />
+          ) : (
+            <ImagePreview key={item.id} imageUri={item.uri} />
+          )}
+        </Pressable>
+      </>
+    );
+  };
+
   return (
     <>
       <View
@@ -116,7 +134,10 @@ export default function preview() {
           </Appbar.Header>
         </Animated.View>
         <Animated.FlatList
-          ref={flatlist}
+          renderToHardwareTextureAndroid
+          removeClippedSubviews
+          maxToRenderPerBatch={1}
+          windowSize={3}
           horizontal
           snapToAlignment="center"
           pagingEnabled
@@ -133,6 +154,21 @@ export default function preview() {
             style={bottomSlideAnimation}
             className="absolute w-full"
           >
+            {asset.mediaType === "video" && (
+              <View className="h-[64]">
+                <IconButton
+                  icon={isplaying ? "stop" : "play"}
+                  onPress={() => {
+                    if (!isplaying) {
+                      player.play();
+                    } else {
+                      player.pause();
+                    }
+                    setisPlaying(!isplaying);
+                  }}
+                />
+              </View>
+            )}
             <PreviewMenu asset={asset} handleDelete={handleDelete} />
           </Animated.View>
         )}
