@@ -11,10 +11,6 @@ type DialogProps = {
   setVideoRes: (value: number) => void;
   minRes: number;
   maxRes: number;
-  fps: number;
-  minFps: number;
-  maxFps: number;
-  setFps: (value: number) => void;
 };
 
 export default function SelectFormatDialog({
@@ -25,10 +21,6 @@ export default function SelectFormatDialog({
   setVideoRes,
   minRes,
   maxRes,
-  fps,
-  minFps,
-  maxFps,
-  setFps,
 }: DialogProps) {
   return (
     <Portal>
@@ -46,16 +38,6 @@ export default function SelectFormatDialog({
               step={360}
               value={videoRes}
               onValueChange={setVideoRes}
-            />
-          </List.Section>
-          <List.Section>
-            <List.Item title="FPS" right={() => <Text>{fps}</Text>} />
-            <Slider
-              minValue={minFps}
-              maxValue={maxFps}
-              step={1}
-              value={fps}
-              onValueChange={setFps}
             />
           </List.Section>
         </Dialog.Content>

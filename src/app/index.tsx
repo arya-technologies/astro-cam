@@ -15,7 +15,6 @@ import {
 } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
 import { useAppState } from "@react-native-community/hooks";
-import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
@@ -68,6 +67,7 @@ export default function index() {
   const [videoBitRate, setvideoBitRate] = useState<VideoBitRates>(
     controls.videoBitRate,
   );
+  const [antiFlicker, setantiFlicker] = useState<boolean>(controls.antiFlicker);
 
   const [videoRes, setvideoRes] = useState<number>(
     device?.formats[0].videoHeight!,
@@ -82,7 +82,7 @@ export default function index() {
   const format =
     controls.format || mode === "video" ? videoFormat : imageFormat;
 
-  const [fps, setfps] = useState(format?.maxFps);
+  const [fps, setfps] = useState(controls.antiFlicker ? 50 : format?.maxFps);
   const [focus, setfocus] = useState<boolean>(false);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
 
@@ -173,9 +173,19 @@ export default function index() {
         imageType,
         videoCodec,
         videoBitRate,
+        antiFlicker,
       }),
     );
-  }, [device, format, mode, videoType, imageType, videoCodec, videoBitRate]);
+  }, [
+    device,
+    format,
+    mode,
+    videoType,
+    imageType,
+    videoCodec,
+    videoBitRate,
+    antiFlicker,
+  ]);
 
   if (!hasPermission || !hasMediaPermission?.granted) {
     return <Permissions />;
@@ -233,6 +243,7 @@ export default function index() {
             photo={true}
             video={true}
             audio={false}
+            fps={fps}
             photoHdr={false}
             videoHdr={false}
             lowLightBoost={false}
@@ -282,10 +293,6 @@ export default function index() {
           minRes={device.formats.at(-1)?.videoHeight!}
           maxRes={device.formats[0].videoHeight!}
           setVideoRes={setvideoRes}
-          fps={fps!}
-          minFps={format?.minFps!}
-          maxFps={format?.maxFps!}
-          setFps={setfps}
           visible={isFormatsDialogVisible}
           onDismiss={hideFormatsDialog}
         />

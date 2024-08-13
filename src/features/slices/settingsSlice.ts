@@ -27,6 +27,7 @@ type ControlsProps = {
   videoType: VideoTypes;
   videoCodec: VideoCodecs;
   videoBitRate: VideoBitRates;
+  antiFlicker: boolean;
 };
 
 export interface SettingsProps {
@@ -44,6 +45,7 @@ const initialState: SettingsProps = {
     videoType: "mov",
     videoCodec: "h265",
     videoBitRate: "normal",
+    antiFlicker: false,
   },
 };
 
@@ -65,6 +67,7 @@ export const settingsSlice = createSlice({
       controls.videoType = payload.videoType;
       controls.videoCodec = payload.videoCodec;
       controls.videoBitRate = payload.videoBitRate;
+      controls.antiFlicker = payload.antiFlicker;
     },
   },
 });
