@@ -1,19 +1,19 @@
-import { Asset } from "expo-media-library";
 import React from "react";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
 
 type DeleteAssetDialogProps = {
   visible: boolean;
   onDismiss: () => void;
-
   onDelete: () => void;
-  asset: Asset;
+  assetId: string;
+  assetName: string;
 };
 export default function DeleteAssetDialog({
   visible,
   onDismiss,
   onDelete,
-  asset,
+  assetId,
+  assetName,
 }: DeleteAssetDialogProps) {
   return (
     <Portal>
@@ -21,7 +21,7 @@ export default function DeleteAssetDialog({
         <Dialog.Icon icon="warning" />
         <Dialog.Title>Warning</Dialog.Title>
         <Dialog.Content>
-          <Text>Are you sure you want to delete {asset.filename} ?</Text>
+          <Text>Are you sure you want to delete {assetName} ?</Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss}>Cancel</Button>

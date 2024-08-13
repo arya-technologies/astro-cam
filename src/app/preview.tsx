@@ -10,11 +10,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import { Appbar } from "react-native-paper";
 import Animated, {
+  interpolate,
   LinearTransition,
+  useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AssetInfo from "@/components/AssetInfo";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -27,21 +30,9 @@ export default function preview() {
   const [isFullScreen, setisFullScreen] = useState<boolean>(false);
   const toggleFullScreen = () => setisFullScreen(!isFullScreen);
 
-  const appBarTop = useSharedValue(0);
-  const menuBottom = useSharedValue(0);
-
-  const handleFullScreen = () => {
-    // StatusBar.setStatusBarHidden(isFullScreen);
-    // NavigationBar.setVisibilityAsync(isFullScreen ? "hidden" : "visible");
-    if (!isFullScreen) {
-      appBarTop.value = withSpring(-(64 + top));
-      menuBottom.value = withSpring(-(64 + bottom));
-    } else {
-      appBarTop.value = withSpring(0);
-      menuBottom.value = withSpring(0);
-    }
-    toggleFullScreen();
-  };
+  const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
+  const showInfo = () => setisInfoVisible(true);
+  const hideInfo = () => setisInfoVisible(false);
 
   useEffect(() => {
     (async function () {
@@ -61,9 +52,7 @@ export default function preview() {
 
   const handleDelete = async () => {
     if (asset) {
-      await MediaLibrary.deleteAssetsAsync([asset.id])
-        .then(() => console.log(`deleted ${asset.filename}`))
-        .catch((err) => console.log(err));
+      await MediaLibrary.deleteAssetsAsync([asset.id]);
       const updatedAssets = assets.filter((item) => item.id !== asset.id);
       setassets(updatedAssets);
     }
@@ -83,48 +72,80 @@ export default function preview() {
     );
   };
 
+  const slideY = useSharedValue(0);
+  const topSlideAnimation = useAnimatedStyle(
+    () => ({
+      top: interpolate(slideY.value, [0, 100], [0, -64]),
+      opacity: interpolate(slideY.value, [0, 100], [1, 0]),
+    }),
+    [slideY],
+  );
+  const bottomSlideAnimation = useAnimatedStyle(
+    () => ({
+      bottom: interpolate(slideY.value, [0, 100], [0, -64]),
+      opacity: interpolate(slideY.value, [0, 100], [1, 0]),
+    }),
+    [slideY],
+  );
+  const handleFullScreen = () => {
+    if (!isFullScreen) {
+      slideY.value = withSpring(100, { overshootClamping: true });
+    } else {
+      slideY.value = withSpring(0, { overshootClamping: true });
+    }
+    toggleFullScreen();
+  };
+
   return (
-    <View
-      className="h-full flex-1"
-      style={{
-        backgroundColor: colors.surface,
-      }}
-    >
-      <Animated.View style={{ top: appBarTop }} className="absolute w-full">
-        <Appbar.Header mode="small" style={{ opacity: isFullScreen ? 0 : 1 }}>
-          <Appbar.BackAction
-            onPress={() => {
-              router.back();
-            }}
-          />
-          <Appbar.Content title="Preview" />
-          <Appbar.Action icon="ellipsis-vertical" />
-        </Appbar.Header>
-      </Animated.View>
-      <Animated.FlatList
-        ref={flatlist}
-        horizontal
-        snapToAlignment="center"
-        pagingEnabled
-        viewabilityConfig={{ itemVisiblePercentThreshold: 90 }}
-        data={assets}
-        initialNumToRender={1}
-        renderItem={({ item }) => renderItem(item)}
-        className="w-full h-full absolute -z-10"
-        onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
-        itemLayoutAnimation={LinearTransition}
-        keyExtractor={(item) => item.id}
-      />
-      {asset && (
-        <Animated.View
-          style={{
-            bottom: menuBottom,
-          }}
-          className="absolute w-full"
-        >
-          <PreviewMenu asset={asset} handleDelete={handleDelete} />
+    <>
+      <View
+        className="h-full flex-1"
+        style={{
+          backgroundColor: colors.surface,
+        }}
+      >
+        <Animated.View style={topSlideAnimation} className="absolute w-full">
+          <Appbar.Header mode="small">
+            <Appbar.BackAction
+              onPress={() => {
+                router.back();
+              }}
+            />
+            <Appbar.Content title="Preview" />
+            <Appbar.Action icon="information" onPress={showInfo} />
+          </Appbar.Header>
         </Animated.View>
-      )}
-    </View>
+        <Animated.FlatList
+          ref={flatlist}
+          horizontal
+          snapToAlignment="center"
+          pagingEnabled
+          data={assets}
+          initialNumToRender={1}
+          renderItem={({ item }) => renderItem(item)}
+          className="w-full h-full absolute -z-10"
+          onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
+          itemLayoutAnimation={LinearTransition}
+          keyExtractor={(item) => item.id}
+        />
+        {asset && (
+          <Animated.View
+            style={bottomSlideAnimation}
+            className="absolute w-full"
+          >
+            <PreviewMenu asset={asset} handleDelete={handleDelete} />
+          </Animated.View>
+        )}
+      </View>
+      <>
+        {asset && (
+          <AssetInfo
+            assetId={asset.id}
+            visible={isInfoVisible}
+            onDismiss={hideInfo}
+          />
+        )}
+      </>
+    </>
   );
 }

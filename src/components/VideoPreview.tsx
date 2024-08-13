@@ -1,13 +1,8 @@
+import { useVideoPlayer, VideoView } from "expo-video";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import {
-  useVideoPlayer,
-  VideoPlayer,
-  VideoView,
-  VideoViewProps,
-} from "expo-video";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type VideoPreviewProps = {
   videoUri: string;
@@ -16,21 +11,12 @@ type VideoPreviewProps = {
 export default function VideoPreview({ videoUri }: VideoPreviewProps) {
   const { bottom } = useSafeAreaInsets();
 
-  const [isfullscreen, setisfullscreen] = useState<boolean>(false);
-
   const playerRef = useRef(null);
   const [isplaying, setisPlaying] = useState<boolean>(false);
 
   const player = useVideoPlayer(videoUri, (player) => {
-    player.loop = true;
+    // player.loop = true;
   });
-
-  const handleFullscreen = () => {
-    if (!isfullscreen) {
-    } else {
-    }
-    setisfullscreen(!isfullscreen);
-  };
 
   useEffect(() => {
     const subscription = player.addListener("playingChange", (isplaying) => {
@@ -44,7 +30,7 @@ export default function VideoPreview({ videoUri }: VideoPreviewProps) {
 
   const handlePlay = async () => {
     if (!isplaying) {
-      player.play();
+      player.replay();
     } else {
       player.pause();
     }
@@ -71,7 +57,7 @@ export default function VideoPreview({ videoUri }: VideoPreviewProps) {
         className="absolute  w-full bottom-0 left-0"
         style={{ paddingBottom: bottom }}
       >
-        <View className="h-20 bg-red-300"></View>
+        <View className="h-20"></View>
       </View>
     </>
   );

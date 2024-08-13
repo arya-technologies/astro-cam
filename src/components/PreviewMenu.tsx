@@ -2,9 +2,8 @@ import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
 import { useState } from "react";
 import { View } from "react-native";
-import { IconButton } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AssetInfo from "./AssetInfo";
 import DeleteAssetDialog from "./DeleteAssetDialog";
 
 type PreviewMenuProps = {
@@ -15,10 +14,6 @@ type PreviewMenuProps = {
 export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
   const { bottom } = useSafeAreaInsets();
 
-  const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
-  const showInfo = () => setisInfoVisible(true);
-  const hideInfo = () => setisInfoVisible(false);
-
   const [isDeleteDialogVisible, setisDeleteDialogVisible] =
     useState<boolean>(false);
   const showDeleteDialog = () => setisDeleteDialogVisible(true);
@@ -27,26 +22,24 @@ export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
   return (
     <>
       <View style={{ paddingBottom: bottom }}>
-        <View className="flex-row items-center justify-evenly h-[64]">
+        <View className="flex-row items-center justify-between h-[64] px-4">
           <IconButton
             icon="share"
             onPress={() => Sharing.shareAsync(asset.uri)}
           />
+          <Text>{asset.filename}</Text>
           <IconButton icon="trash-bin" onPress={showDeleteDialog} />
-          <IconButton icon="information" onPress={showInfo} />
         </View>
       </View>
-      <AssetInfo
-        assetId={asset.id}
-        visible={isInfoVisible}
-        onDismiss={hideInfo}
-      />
-      <DeleteAssetDialog
-        asset={asset}
-        visible={isDeleteDialogVisible}
-        onDismiss={hideDeleteDialog}
-        onDelete={handleDelete}
-      />
+      <>
+        <DeleteAssetDialog
+          assetId={asset.id}
+          assetName={asset.filename}
+          visible={isDeleteDialogVisible}
+          onDismiss={hideDeleteDialog}
+          onDelete={handleDelete}
+        />
+      </>
     </>
   );
 }

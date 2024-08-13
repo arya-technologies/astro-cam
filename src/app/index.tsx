@@ -17,10 +17,8 @@ import { RootState } from "@/features/store";
 import { useAppState } from "@react-native-community/hooks";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
-import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Image, Pressable, TouchableOpacity, View } from "react-native";
-import { IconButton } from "react-native-paper";
+import { View } from "react-native";
 import Reanimated, {
   interpolate,
   useAnimatedProps,
@@ -153,6 +151,7 @@ export default function index() {
         if (album) {
           const albumAssets = await MediaLibrary.getAssetsAsync({
             album,
+            first: 1,
             mediaType: ["photo", "video"],
             sortBy: "creationTime",
           });
@@ -165,8 +164,18 @@ export default function index() {
   }, [hasPermission, hasMediaPermission]);
 
   useEffect(() => {
-    dispatch(setcontrols({ device, format, mode, videoType }));
-  }, [device, format, mode, imageType, videoType]);
+    dispatch(
+      setcontrols({
+        device,
+        format,
+        mode,
+        videoType,
+        imageType,
+        videoCodec,
+        videoBitRate,
+      }),
+    );
+  }, [device, format, mode, videoType, imageType, videoCodec, videoBitRate]);
 
   if (!hasPermission || !hasMediaPermission?.granted) {
     return <Permissions />;
@@ -183,9 +192,6 @@ export default function index() {
       });
       if (image) {
         setlastCapturedUri(`file://${image.path}`);
-        // const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
-        // setlastCapturedUri(imageUri);
-        // addAsset(imageUri);
       }
     } else if (mode === "video") {
       if (!isRecording) {
@@ -197,9 +203,6 @@ export default function index() {
           path: "/storage/emulated/0/Pictures/AstroCam/",
           onRecordingFinished: (video) => {
             setlastCapturedUri(`file://${video.path}`);
-            // const videoUri = `${FileSystem.cacheDirectory}${video.path.split("/").pop()}`;
-            // setlastCapturedUri(videoUri);
-            // addAsset(videoUri);
           },
           onRecordingError: (error) => console.log("onRecordingError", error),
         });
