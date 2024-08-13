@@ -19,7 +19,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.notscripter.astrocam"
+      "bundleIdentifier": "com.notscripter.astrocam",
+      "infoPlist": {
+        "NSCameraUsageDescription": "[REASON]",
+        "NSMicrophoneUsageDescription": "[REASON]"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -43,9 +47,16 @@
     "plugins": [
       "expo-router",
       [
-        "expo-camera",
+        "react-native-permissions",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
+          // Add setup_permissions to your Podfile (see iOS setup - steps 1, 2 and 3)
+          "iosPermissions": ["Camera"]
+        }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
         }
       ],
       [
@@ -54,12 +65,6 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
-        }
-      ],
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
         }
       ]
     ],

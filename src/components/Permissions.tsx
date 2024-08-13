@@ -4,6 +4,7 @@ import * as MediaLibrary from "expo-media-library";
 import React from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
+import { check, request, PERMISSIONS } from "react-native-permissions";
 import { useCameraPermission } from "react-native-vision-camera";
 
 type PermissionsProps = {};
@@ -18,19 +19,22 @@ export default function Permissions({}: PermissionsProps) {
   const handleRequestPermissions = () => {
     if (mediaPermission?.canAskAgain) {
       requestPermissions();
-    } else {
-      // Linking.openSettings();
       Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
+    } else {
+      Linking.openSettings();
     }
   };
 
-  const requestPermissions = () => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-    if (!mediaPermission?.granted) {
-      requestMediaPermission();
-    }
+  const requestPermissions = async () => {
+    const cameraPermisson = await check(PERMISSIONS.ANDROID.CAMERA);
+    console.log(cameraPermisson);
+    //NOTE: old
+    // if (!hasPermission) {
+    //   requestPermission();
+    // }
+    // if (!mediaPermission?.granted) {
+    //   requestMediaPermission();
+    // }
   };
 
   return (
