@@ -8,6 +8,7 @@ import VirticalCameraMenu from "@/components/VirticalCameraMenu";
 import {
   CameraModes,
   ImageTypes,
+  setcamera,
   setcontrols,
   VideoBitRates,
   VideoCodecs,
@@ -43,7 +44,9 @@ export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { controls } = useSelector((state: RootState) => state.settings);
+  const { controls, camera } = useSelector(
+    (state: RootState) => state.settings,
+  );
   const { hasPermission, requestPermission } = useCameraPermission();
   const [hasMediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
@@ -52,13 +55,13 @@ export default function index() {
   const appState = useAppState();
   const isActive = appState === "active";
 
-  const camera = useRef<Camera>(null);
+  const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
   const [device, setdevice] = useState<CameraDevice>(
-    controls.device || devices[0],
+    camera.device || devices[0],
   );
 
-  const [mode, setmode] = useState<CameraModes>(controls.mode || "picture");
+  const [mode, setmode] = useState<CameraModes>(camera.mode || "picture");
   const [imageType, setimageType] = useState<ImageTypes>(controls.imageType);
   const [videoType, setvideoType] = useState<VideoTypes>(controls.videoType);
   const [videoCodec, setvideoCodec] = useState<VideoCodecs>(
@@ -79,11 +82,10 @@ export default function index() {
       videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
     },
   ]);
-  const format =
-    controls.format || mode === "video" ? videoFormat : imageFormat;
+  const format = camera.format || mode === "video" ? videoFormat : imageFormat;
 
   const [fps, setfps] = useState(controls.antiFlicker ? 50 : format?.maxFps);
-  const [focus, setfocus] = useState<boolean>(false);
+  const [autoFocus, setautoFocus] = useState<boolean>(controls.autoFocus);
   const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
 
   const isoSlider = useSharedValue(0);
@@ -166,26 +168,24 @@ export default function index() {
   useEffect(() => {
     dispatch(
       setcontrols({
-        device,
-        format,
-        mode,
         videoType,
         imageType,
         videoCodec,
         videoBitRate,
         antiFlicker,
+        autoFocus,
       }),
     );
-  }, [
-    device,
-    format,
-    mode,
-    videoType,
-    imageType,
-    videoCodec,
-    videoBitRate,
-    antiFlicker,
-  ]);
+  }, [videoType, imageType, videoCodec, videoBitRate, antiFlicker, autoFocus]);
+  useEffect(() => {
+    dispatch(
+      setcamera({
+        device,
+        format,
+        mode,
+      }),
+    );
+  }, [device, format, mode]);
 
   if (!hasPermission || !hasMediaPermission?.granted) {
     return <Permissions />;
@@ -197,7 +197,7 @@ export default function index() {
 
   const handleCapture = async () => {
     if (mode === "picture") {
-      const image = await camera.current?.takePhoto({
+      const image = await cameraRef.current?.takePhoto({
         path: "/storage/emulated/0/Pictures/AstroCam/",
       });
       if (image) {
@@ -206,7 +206,7 @@ export default function index() {
     } else if (mode === "video") {
       if (!isRecording) {
         setisRecording(true);
-        camera.current?.startRecording({
+        cameraRef.current?.startRecording({
           videoCodec,
           videoBitRate,
           fileType: videoType,
@@ -217,7 +217,7 @@ export default function index() {
           onRecordingError: (error) => console.log("onRecordingError", error),
         });
       } else {
-        camera.current?.stopRecording();
+        cameraRef.current?.stopRecording();
         setisRecording(false);
       }
     }
@@ -237,7 +237,7 @@ export default function index() {
           <AnimatedCamera
             animatedProps={animatedProps}
             isActive={isActive}
-            ref={camera}
+            ref={cameraRef}
             device={device!}
             format={format}
             photo={true}

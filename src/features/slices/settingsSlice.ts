@@ -19,10 +19,13 @@ export type VideoBitRates =
 type AppearanceProps = {
   theme: ThemeProps;
 };
-type ControlsProps = {
+type CameraProps = {
   mode: CameraModes;
   device?: CameraDevice;
   format?: CameraDeviceFormat;
+};
+type ControlsProps = {
+  autoFocus: boolean;
   imageType: ImageTypes;
   videoType: VideoTypes;
   videoCodec: VideoCodecs;
@@ -31,16 +34,20 @@ type ControlsProps = {
 };
 
 export interface SettingsProps {
+  camera: CameraProps;
   appearance: AppearanceProps;
   controls: ControlsProps;
 }
 
 const initialState: SettingsProps = {
+  camera: {
+    mode: "picture",
+  },
   appearance: {
     theme: "system",
   },
   controls: {
-    mode: "picture",
+    autoFocus: false,
     imageType: "jpg",
     videoType: "mov",
     videoCodec: "h265",
@@ -53,6 +60,11 @@ export const settingsSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
+    setcamera: ({ camera }, { payload }: PayloadAction<CameraProps>) => {
+      camera.device = payload.device;
+      camera.format = payload.format;
+      camera.mode = payload.mode;
+    },
     setappearance: (
       { appearance },
       { payload }: PayloadAction<AppearanceProps>,
@@ -60,18 +72,16 @@ export const settingsSlice = createSlice({
       appearance.theme = payload.theme;
     },
     setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
-      controls.device = payload.device;
-      controls.format = payload.format;
-      controls.mode = payload.mode;
       controls.imageType = payload.imageType;
       controls.videoType = payload.videoType;
       controls.videoCodec = payload.videoCodec;
       controls.videoBitRate = payload.videoBitRate;
       controls.antiFlicker = payload.antiFlicker;
+      controls.autoFocus = payload.autoFocus;
     },
   },
 });
 
-export const { setappearance, setcontrols } = settingsSlice.actions;
+export const { setcamera, setappearance, setcontrols } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
