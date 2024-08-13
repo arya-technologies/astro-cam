@@ -16,12 +16,12 @@ export default function Permissions({}: PermissionsProps) {
     MediaLibrary.usePermissions();
 
   const handleRequestPermissions = () => {
+    Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
     if (mediaPermission?.canAskAgain) {
       requestPermissions();
     } else {
       Linking.openSettings();
     }
-    Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
   };
 
   const requestPermissions = () => {

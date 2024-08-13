@@ -6,9 +6,11 @@ import SelectDialog from "@/components/SelectDialog";
 import SelectFormatDialog from "@/components/SelectFormatDialog";
 import VirticalCameraMenu from "@/components/VirticalCameraMenu";
 import {
-  CameraModeTypes,
+  CameraModes,
   ImageTypes,
   setcontrols,
+  VideoBitRates,
+  VideoCodecs,
   VideoTypes,
 } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
@@ -45,7 +47,7 @@ export default function index() {
   const dispatch = useDispatch();
   const { controls } = useSelector((state: RootState) => state.settings);
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [mediaPermission, requestMediaPermission] =
+  const [hasMediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
 
   // const isFocused = useIsFocused()
@@ -58,12 +60,14 @@ export default function index() {
     controls.device || devices[0],
   );
 
-  const [mode, setmode] = useState<CameraModeTypes>(controls.mode || "picture");
-  const [imageType, setimageType] = useState<ImageTypes>(
-    controls.imageTyp || "raw",
+  const [mode, setmode] = useState<CameraModes>(controls.mode || "picture");
+  const [imageType, setimageType] = useState<ImageTypes>(controls.imageType);
+  const [videoType, setvideoType] = useState<VideoTypes>(controls.videoType);
+  const [videoCodec, setvideoCodec] = useState<VideoCodecs>(
+    controls.videoCodec,
   );
-  const [videoType, setvideoType] = useState<VideoTypes>(
-    controls.videoType || "mov",
+  const [videoBitRate, setvideoBitRate] = useState<VideoBitRates>(
+    controls.videoBitRate,
   );
 
   const [videoRes, setvideoRes] = useState<number>(
@@ -143,7 +147,7 @@ export default function index() {
 
   useEffect(() => {
     (async function () {
-      if (hasPermission && mediaPermission?.granted) {
+      if (hasPermission && hasMediaPermission?.granted) {
         const album = await MediaLibrary.getAlbumAsync("AstroCam");
         if (album) {
           const albumAssets = await MediaLibrary.getAssetsAsync({
@@ -157,14 +161,14 @@ export default function index() {
         }
       }
     })();
-  }, [mediaPermission]);
+  }, [hasPermission, hasMediaPermission]);
 
   useEffect(() => {
     dispatch(setcontrols({ device, format, mode, videoType }));
   }, [device, format, mode, imageType, videoType]);
 
-  if (!hasPermission || !mediaPermission?.granted) {
-    <Permissions />;
+  if (!hasPermission || !hasMediaPermission?.granted) {
+    return <Permissions />;
   }
 
   const toggleCameraMode = () => {
@@ -173,21 +177,26 @@ export default function index() {
 
   const handleCapture = async () => {
     if (mode === "picture") {
-      const image = await camera.current?.takePhoto();
+      const image = await camera.current?.takePhoto({
+        path: "/storage/emulated/0/Pictures/AstroCam/",
+      });
       if (image) {
         const imageUri = `${FileSystem.cacheDirectory}${image.path.split("/").pop()}`;
         setlastCapturedUri(imageUri);
-        addAsset(imageUri);
+        // addAsset(imageUri);
       }
     } else if (mode === "video") {
       if (!isrecording) {
         setisrecording(true);
         camera.current?.startRecording({
-          videoCodec: "h265",
+          videoCodec,
+          videoBitRate,
+          fileType: videoType,
+          path: "/storage/emulated/0/Pictures/AstroCam/",
           onRecordingFinished: (video) => {
             const videoUri = `${FileSystem.cacheDirectory}${video.path.split("/").pop()}`;
             setlastCapturedUri(videoUri);
-            addAsset(videoUri);
+            // addAsset(videoUri);
           },
           onRecordingError: (error) => console.log("onRecordingError", error),
         });

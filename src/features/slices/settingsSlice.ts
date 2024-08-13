@@ -4,21 +4,29 @@ import { CameraDevice, CameraDeviceFormat } from "react-native-vision-camera";
 
 export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
 
-export type CameraModeTypes = "picture" | "video";
+export type CameraModes = "picture" | "video";
 export type ImageTypes = "raw" | "png" | "jpg";
 export type VideoTypes = "mov" | "mp4";
+export type VideoCodecs = "h264" | "h265";
+export type VideoBitRates =
+  | number
+  | "extra-low"
+  | "low"
+  | "normal"
+  | "high"
+  | "extra-high";
 
 type AppearanceProps = {
   theme: ThemeProps;
 };
 type ControlsProps = {
-  mode: CameraModeTypes;
+  mode: CameraModes;
   device?: CameraDevice;
   format?: CameraDeviceFormat;
-  imageTyp?: ImageTypes;
-  videoType?: VideoTypes;
-  videoCodec?: "h264" | "h265";
-  videoBitRate?: number | "low" | "high";
+  imageType: ImageTypes;
+  videoType: VideoTypes;
+  videoCodec: VideoCodecs;
+  videoBitRate: VideoBitRates;
 };
 
 export interface SettingsProps {
@@ -32,6 +40,10 @@ const initialState: SettingsProps = {
   },
   controls: {
     mode: "picture",
+    imageType: "jpg",
+    videoType: "mov",
+    videoCodec: "h265",
+    videoBitRate: "normal",
   },
 };
 
@@ -49,7 +61,7 @@ export const settingsSlice = createSlice({
       controls.device = payload.device;
       controls.format = payload.format;
       controls.mode = payload.mode;
-      controls.imageTyp = payload.imageTyp;
+      controls.imageType = payload.imageType;
       controls.videoType = payload.videoType;
       controls.videoCodec = payload.videoCodec;
       controls.videoBitRate = payload.videoBitRate;
