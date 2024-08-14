@@ -1,116 +1,45 @@
 import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
-import {
-  Button,
-  Dialog,
-  IconButton,
-  List,
-  Portal,
-  Text,
-} from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import CopyToClipButton from "./CopyToClipButton";
+import DeleteAssetDialog from "./DeleteAssetDialog";
 
 type PreviewMenuProps = {
   asset: MediaLibrary.Asset;
+  handleDelete: () => void;
 };
 
-export default function PreviewMenu({ asset }: PreviewMenuProps) {
-  const { top, bottom } = useSafeAreaInsets();
-  const [assetInfo, setassetInfo] = useState<MediaLibrary.AssetInfo>();
-  const [isInfoVisible, setisInfoVisible] = useState<boolean>(false);
+export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
+  const { bottom } = useSafeAreaInsets();
 
-  const showInfo = () => setisInfoVisible(true);
-  const hideInfo = () => setisInfoVisible(false);
-
-  useEffect(() => {
-    (async function () {
-      const result = await MediaLibrary.getAssetInfoAsync(asset);
-      setassetInfo(result);
-    })();
-  }, [asset]);
+  const [isDeleteDialogVisible, setisDeleteDialogVisible] =
+    useState<boolean>(false);
+  const showDeleteDialog = () => setisDeleteDialogVisible(true);
+  const hideDeleteDialog = () => setisDeleteDialogVisible(false);
 
   return (
     <>
-      <View
-        className="absolute bottom-0 left-0 w-full"
-        style={{ paddingBottom: bottom }}
-      >
-        <View className="flex-row items-center justify-evenly py-4">
+      <View style={{ paddingBottom: bottom }}>
+        <View className="flex-row items-center justify-between h-[64] px-4">
           <IconButton
             icon="share"
             onPress={() => Sharing.shareAsync(asset.uri)}
           />
-          <IconButton icon="information" onPress={showInfo} />
+          <Text>{asset.filename}</Text>
+          <IconButton icon="trash-bin" onPress={showDeleteDialog} />
         </View>
       </View>
-      <Portal>
-        <Dialog visible={isInfoVisible} onDismiss={hideInfo}>
-          <Dialog.Title>Info</Dialog.Title>
-          <Dialog.Content>
-            <List.Item
-              title="Name"
-              description={assetInfo?.filename}
-              right={() => <CopyToClipButton url={assetInfo?.filename} />}
-            />
-            <List.Item
-              title="Time"
-              right={() => <Text>{assetInfo?.creationTime}</Text>}
-            />
-            <List.Item
-              title="Width"
-              right={() => <Text>{assetInfo?.width}</Text>}
-            />
-            <List.Item
-              title="Height"
-              right={() => <Text>{assetInfo?.height}</Text>}
-            />
-            {assetInfo?.mediaType === "video" ? (
-              <>
-                <List.Item
-                  title="Duration"
-                  right={() => <Text>{assetInfo?.duration}s</Text>}
-                />
-              </>
-            ) : (
-              <></>
-            )}
-            <List.Item
-              title="Path"
-              description={assetInfo?.localUri}
-              right={() => <CopyToClipButton url={assetInfo?.localUri} />}
-            />
-            {assetInfo?.location && (
-              <List.Section>
-                <List.Subheader>Location</List.Subheader>
-                <List.Item
-                  title="Latitude"
-                  description={assetInfo?.location?.latitude}
-                  right={() => (
-                    <CopyToClipButton
-                      string={assetInfo?.location?.latitude.toString()}
-                    />
-                  )}
-                />
-                <List.Item
-                  title="Longitude"
-                  description={assetInfo?.location?.longitude}
-                  right={() => (
-                    <CopyToClipButton
-                      string={assetInfo?.location?.longitude.toString()}
-                    />
-                  )}
-                />
-              </List.Section>
-            )}
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideInfo}>Cancel</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <>
+        <DeleteAssetDialog
+          assetId={asset.id}
+          assetName={asset.filename}
+          visible={isDeleteDialogVisible}
+          onDismiss={hideDeleteDialog}
+          onDelete={handleDelete}
+        />
+      </>
     </>
   );
 }

@@ -3,9 +3,9 @@ import NativeSlider from "@react-native-community/slider";
 import React from "react";
 
 type SliderProps = {
-  minValue: number;
-  maxValue: number;
-  step: number;
+  minValue?: number;
+  maxValue?: number;
+  step?: number;
   value: number;
   onValueChange: (value: number) => void;
 };
@@ -20,8 +20,8 @@ export default function Slider({
   const { colors } = useAppTheme();
   return (
     <NativeSlider
-      minimumValue={minValue}
-      maximumValue={maxValue}
+      minimumValue={minValue || 0}
+      maximumValue={maxValue || 100}
       minimumTrackTintColor={colors.outline}
       maximumTrackTintColor={colors.onSurfaceVariant}
       thumbTintColor={colors.primary}

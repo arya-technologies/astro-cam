@@ -1,44 +1,100 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import {
-  CameraMode,
-  ImageType,
-  VideoQuality,
-  VideoStabilization,
-} from "expo-camera";
+  Camera,
+  CameraDevice,
+  CameraDeviceFormat,
+} from "react-native-vision-camera";
 
-export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
-export type PictureSizeProps = "3000x3000";
-export type RatioProps = "1:1";
+export type ThemesProps = "system" | "light" | "dark" | "pureBlack";
+export type ThemeProps = {
+  label: string;
+  value: string;
+  icon: string;
+};
 
-type AppearanceProps = {
+export const themes: ThemeProps[] = [
+  {
+    label: "System",
+    value: "system",
+    icon: "color-wand",
+  },
+  {
+    label: "Light",
+    value: "light",
+    icon: "sunny",
+  },
+  {
+    label: "Dark",
+    value: "dark",
+    icon: "cloudy-night",
+  },
+  {
+    label: "Pure Black",
+    value: "pureBlack",
+    icon: "moon",
+  },
+];
+
+export type CameraModes = "picture" | "video";
+export type ImageTypes = "raw" | "png" | "jpg";
+export type VideoTypes = "mov" | "mp4";
+export type VideoCodecs = "h264" | "h265";
+export type VideoBitRates =
+  | number
+  | "extra-low"
+  | "low"
+  | "normal"
+  | "high"
+  | "extra-high";
+
+interface CameraProps {
+  device: CameraDevice;
+  format: CameraDeviceFormat;
+  mode: CameraModes;
+  autoFocus: boolean;
+}
+interface ImageProps {
+  imageType: ImageTypes;
+}
+interface VideoProps {
+  videoType: VideoTypes;
+  videoCodec: VideoCodecs;
+  videoBitRate: VideoBitRates;
+  antiFlicker: boolean;
+}
+interface AppearanceProps {
   theme: ThemeProps;
-};
-type ControlsProps = {
-  mode: CameraMode;
-  pictureSize: PictureSizeProps;
-  ratio: RatioProps;
-  imageType: ImageType;
-  videoQuality: VideoQuality;
-  videoStabilization: VideoStabilization;
-};
-
-export interface SettingsProps {
-  appearance: AppearanceProps;
-  controls: ControlsProps;
 }
 
+interface SettingsProps {
+  camera: CameraProps;
+  image: ImageProps;
+  video: VideoProps;
+  appearance: AppearanceProps;
+}
+
+const device = Camera.getAvailableCameraDevices()[0];
+const format = device.formats[0];
+
 const initialState: SettingsProps = {
-  appearance: {
-    theme: "system",
-  },
-  controls: {
+  camera: {
+    device,
+    format,
     mode: "picture",
-    pictureSize: "3000x3000",
-    ratio: "1:1",
-    imageType: "png",
-    videoQuality: "1080p",
-    videoStabilization: "off",
+    autoFocus: false,
+  },
+  image: {
+    imageType: "jpg",
+  },
+  video: {
+    videoType: "mov",
+    videoCodec: "h265",
+    videoBitRate: "normal",
+    antiFlicker: false,
+  },
+  appearance: {
+    theme: themes[0],
   },
 };
 
@@ -46,23 +102,44 @@ export const settingsSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
+    setcamera: ({ camera }, { payload }: PayloadAction<CameraProps>) => {
+      camera.mode = payload.mode;
+      camera.autoFocus = payload.autoFocus;
+    },
+    setcameraDevice: ({ camera }, { payload }: PayloadAction<CameraDevice>) => {
+      camera.device = payload;
+    },
+    setcameraFormat: (
+      { camera },
+      { payload }: PayloadAction<CameraDeviceFormat>,
+    ) => {
+      camera.format = payload;
+    },
+    setimage: ({ image }, { payload }: PayloadAction<ImageProps>) => {
+      image.imageType = payload.imageType;
+    },
+    setvideo: ({ video }, { payload }: PayloadAction<VideoProps>) => {
+      video.videoType = payload.videoType;
+      video.videoCodec = payload.videoCodec;
+      video.videoBitRate = payload.videoBitRate;
+      video.antiFlicker = payload.antiFlicker;
+    },
     setappearance: (
       { appearance },
       { payload }: PayloadAction<AppearanceProps>,
     ) => {
       appearance.theme = payload.theme;
     },
-    setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
-      controls.mode = payload.mode;
-      controls.imageType = payload.imageType;
-      controls.pictureSize = payload.pictureSize;
-      controls.ratio = payload.ratio;
-      controls.videoQuality = payload.videoQuality;
-      controls.videoStabilization = payload.videoStabilization;
-    },
   },
 });
 
-export const { setappearance, setcontrols } = settingsSlice.actions;
+export const {
+  setcamera,
+  setappearance,
+  setimage,
+  setvideo,
+  setcameraDevice,
+  setcameraFormat,
+} = settingsSlice.actions;
 
 export default settingsSlice.reducer;

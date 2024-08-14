@@ -1,87 +1,151 @@
+import CameraSlidersMenu from "@/components/CameraSlidersMenu";
+import Permissions from "@/components/Permissions";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import Slider from "@/components/Slider";
+import SelectDeviceDialog from "@/components/SelectDeviceDialog";
+import SelectDialog from "@/components/SelectDialog";
+import SelectFormatDialog from "@/components/SelectFormatDialog";
+import VirticalCameraMenu from "@/components/VirticalCameraMenu";
 import {
-  PictureSizeProps,
-  RatioProps,
-  setcontrols,
+  CameraModes,
+  ImageTypes,
+  setcamera,
+  VideoBitRates,
+  VideoCodecs,
+  VideoTypes,
 } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
-import {
-  CameraMode,
-  CameraView,
-  ImageType,
-  VideoQuality,
-  VideoStabilization,
-  useCameraPermissions,
-} from "expo-camera";
+import { useAppState } from "@react-native-community/hooks";
 import * as MediaLibrary from "expo-media-library";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  Image,
-  Linking,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import {
-  Button,
-  Dialog,
-  IconButton,
-  List,
-  Portal,
-  RadioButton,
-  Text,
-} from "react-native-paper";
+import { useEffect, useRef, useState } from "react";
+import { View } from "react-native";
+import Reanimated, {
+  interpolate,
+  useAnimatedProps,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  Camera,
+  CameraDevice,
+  CameraProps,
+  useCameraDevices,
+  useCameraFormat,
+  useCameraPermission,
+} from "react-native-vision-camera";
 import { useDispatch, useSelector } from "react-redux";
+import CameraMainMenu from "@/components/CameraMainMenu";
+
+const AnimatedCamera = Reanimated.createAnimatedComponent(Camera);
+Reanimated.addWhitelistedNativeProps({ zoom: true, exposure: true });
 
 export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { controls } = useSelector((state: RootState) => state.settings);
-  const [permission, requestPermission] = useCameraPermissions();
-  const [mediaPermission, requestMediaPermission] =
+  const { camera, video, image } = useSelector(
+    (state: RootState) => state.settings,
+  );
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const [hasMediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
 
-  const [isResDialogVisible, setisResDialogVisible] = useState<boolean>(false);
-  const showResDialog = () => setisResDialogVisible(true);
-  const hideResDialog = () => setisResDialogVisible(false);
+  // const isFocused = useIsFocused()
+  const appState = useAppState();
+  const isActive = appState === "active";
+
+  const cameraRef = useRef<Camera>(null);
+  const devices = useCameraDevices();
+  // const [device, setdevice] = useState<CameraDevice>(
+  //   camera.device || devices[0],
+  // );
+
+  const [mode, setmode] = useState<CameraModes>(camera.mode || "picture");
+
+  // const [videoRes, setvideoRes] = useState<number>(
+  //   device?.formats[0].videoHeight!,
+  // );
+  // const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  // const videoFormat = useCameraFormat(device, [
+  //   {
+  //     videoAspectRatio: 9 / 16,
+  //     videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
+  //   },
+  // ]);
+  // const format = camera.format || mode === "video" ? videoFormat : imageFormat;
+
+  const [fps, setfps] = useState(
+    video.antiFlicker ? 50 : camera.format?.maxFps,
+  );
+  const [autoFocus, setautoFocus] = useState<boolean>(camera.autoFocus);
+  const [focusDepth, setfocusDepth] = useState(camera.device.minFocusDistance);
+
+  const isoSlider = useSharedValue(0);
+  const iso = useDerivedValue(() => {
+    if (camera.format === undefined) return 0;
+    return interpolate(
+      isoSlider.value,
+      [0, 100],
+      [camera.format.minISO, camera.format.maxISO],
+    );
+  }, [isoSlider, camera.device]);
+
+  const exposureSlider = useSharedValue(50);
+  const exposure = useDerivedValue(() => {
+    if (camera.device === null) return 0;
+    return interpolate(
+      exposureSlider.value,
+      [0, 100],
+      [camera.device.minExposure, camera.device.maxExposure],
+    );
+  }, [exposureSlider, camera.device]);
+
+  const zoomSlider = useSharedValue(0);
+  const zoom = useDerivedValue(() => {
+    if (camera.device === null) return 0;
+    return interpolate(
+      zoomSlider.value,
+      [0, 100],
+      [camera.device.minZoom, camera.device.maxZoom],
+    );
+  }, [zoomSlider, camera.device]);
+
+  const animatedProps = useAnimatedProps<CameraProps>(
+    () => ({ zoom: zoom.value, exposure: exposure.value }),
+    [zoom, exposure],
+  );
+
+  const [lastCapturedUri, setlastCapturedUri] = useState<string>("");
+  const [isRecording, setisRecording] = useState<boolean>(false);
+
+  const [isDevicesDialogVisible, setisDevicesDialogVisible] =
+    useState<boolean>(false);
+  const showDevicesDialog = () => setisDevicesDialogVisible(true);
+  const hideDevicesDialog = () => setisDevicesDialogVisible(false);
+
+  const [isFormatsDialogVisible, setisFormatsDialogVisible] =
+    useState<boolean>(false);
+  const showFormatsDialog = () => setisFormatsDialogVisible(true);
+  const hideFormatsDialog = () => setisFormatsDialogVisible(false);
+
   const [isPictureTypesDialogVisible, setisPictureTypesDialogVisible] =
     useState<boolean>(false);
   const showPictureTypesDialog = () => setisPictureTypesDialogVisible(true);
   const hidePictureTypesDialog = () => setisPictureTypesDialogVisible(false);
 
-  const [mode, setmode] = useState<CameraMode>(controls?.mode);
-  const [camera, setcamera] = useState<CameraView | null>();
-  const [pictureSize, setpictureSize] = useState<PictureSizeProps>(
-    controls?.pictureSize,
-  );
-  const [pictureSizes, setpictureSizes] = useState<string[]>([]);
-  const [imageType, setimageType] = useState<ImageType>(controls?.imageType);
-  const [imageTypes, setimageTypes] = useState<ImageType[]>(["png", "jpg"]);
-  const [iso, setiso] = useState<number>(0);
-  const [exposure, setexposure] = useState<number>(0);
-  const [zoom, setzoom] = useState<number>(0);
-  const [ratio, setratio] = useState<RatioProps>(controls?.ratio);
-  const [videoQuality, setvideoQuality] = useState<VideoQuality>(
-    controls?.videoQuality,
-  );
-  const videoQualities: VideoQuality[] = ["480p", "720p", "1080p", "2160p"];
-  const [videoStabilization, setvideoStabilization] =
-    useState<VideoStabilization>(controls?.videoStabilization);
-
-  const [lastCapturedUri, setlastCapturedUri] = useState<string>();
-  const [isrecording, setisrecording] = useState<boolean>(false);
+  const [isVideoTypesDialogVisible, setisVideoTypesDialogVisible] =
+    useState<boolean>(false);
+  const showVideoTypesDialog = () => setisVideoTypesDialogVisible(true);
+  const hideVideoTypesDialog = () => setisVideoTypesDialogVisible(false);
 
   useEffect(() => {
     (async function () {
-      if (permission?.granted && mediaPermission?.granted) {
+      if (hasPermission && hasMediaPermission?.granted) {
         const album = await MediaLibrary.getAlbumAsync("AstroCam");
         if (album) {
           const albumAssets = await MediaLibrary.getAssetsAsync({
             album,
+            first: 1,
             mediaType: ["photo", "video"],
             sortBy: "creationTime",
           });
@@ -89,109 +153,67 @@ export default function index() {
             setlastCapturedUri(albumAssets.assets[0]?.uri);
           }
         }
-
-        const pictureSizesRes = await camera?.getAvailablePictureSizesAsync();
-        if (pictureSizesRes) {
-          setpictureSizes(pictureSizesRes);
-        }
       }
     })();
-  }, [camera]);
+  }, [hasPermission, hasMediaPermission]);
 
-  useEffect(() => {
-    dispatch(
-      setcontrols({
-        mode,
-        imageType,
-        pictureSize,
-        ratio,
-        videoQuality,
-        videoStabilization,
-      }),
-    );
-  }, [mode, imageType, pictureSize, ratio, videoQuality, videoStabilization]);
+  // useEffect(() => {
+  //   dispatch(
+  //     setcontrols({
+  //       videoType,
+  //       imageType,
+  //       videoCodec,
+  //       videoBitRate,
+  //       antiFlicker,
+  //       autoFocus,
+  //     }),
+  //   );
+  // }, [videoType, imageType, videoCodec, videoBitRate, antiFlicker, autoFocus]);
+  // useEffect(() => {
+  //   dispatch(
+  //     setcamera({
+  //       device,
+  //       format,
+  //       mode,
+  //     }),
+  //   );
+  // }, [device, format, mode]);
 
-  const requestPermissions = () => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-    if (!mediaPermission?.granted) {
-      requestMediaPermission();
-    }
+  if (!hasPermission || !hasMediaPermission?.granted) {
+    return <Permissions />;
+  }
+
+  const toggleCameraMode = () => {
+    setmode((current) => (current === "picture" ? "video" : "picture"));
   };
 
-  function toggleCameraMode() {
-    setmode((current) => (current === "picture" ? "video" : "picture"));
-    setzoom(0);
-  }
-
-  async function handleCapture() {
+  const handleCapture = async () => {
     if (mode === "picture") {
-      const data = await camera?.takePictureAsync({
-        imageType,
-        quality: 1,
-        skipProcessing: true,
+      const image = await cameraRef.current?.takePhoto({
+        path: "/storage/emulated/0/Pictures/AstroCam/",
       });
-      setlastCapturedUri(data?.uri);
-      if (data) {
-        addImage(data.uri);
+      if (image) {
+        setlastCapturedUri(`file://${image.path}`);
       }
     } else if (mode === "video") {
-      if (!isrecording) {
-        setisrecording(true);
-        const data = await camera?.recordAsync({});
-        setlastCapturedUri(data?.uri);
-        if (data) {
-          addVideo(data.uri);
-        }
+      if (!isRecording) {
+        setisRecording(true);
+        cameraRef.current?.startRecording({
+          videoCodec: video.videoCodec,
+          videoBitRate: video.videoBitRate,
+          fileType: video.videoType,
+          path: "/storage/emulated/0/Pictures/AstroCam/",
+          onRecordingFinished: (video) => {
+            setlastCapturedUri(`file://${video.path}`);
+          },
+          onRecordingError: (error) => console.log("onRecordingError", error),
+        });
       } else {
-        camera?.stopRecording();
-        setisrecording(false);
+        cameraRef.current?.stopRecording();
+        setisRecording(false);
       }
     }
-  }
-
-  async function addImage(imageUri: string) {
-    const imagesDir = "AstroCam";
-    const asset = await MediaLibrary.createAssetAsync(imageUri);
-    const album = await MediaLibrary.getAlbumAsync(imagesDir);
-    if (!album) {
-      await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
-    } else {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-    }
-  }
-  async function addVideo(videoUri: string) {
-    const videosDir = "AstroCam";
-    const asset = await MediaLibrary.createAssetAsync(videoUri);
-    const album = await MediaLibrary.getAlbumAsync(videosDir);
-    if (!album) {
-      await MediaLibrary.createAlbumAsync(videosDir, asset, false);
-    } else {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-    }
-  }
-
-  if (!permission?.granted || !mediaPermission?.granted) {
-    const handleRequestPermissions = () => {
-      if (permission?.canAskAgain && mediaPermission?.canAskAgain) {
-        requestPermissions();
-      } else {
-        Linking.openSettings();
-      }
-    };
-    return (
-      <View
-        className="h-full flex-1 items-center justify-center space-y-4"
-        style={{ backgroundColor: colors.surface }}
-      >
-        <Text>We need your permission to show the camera</Text>
-        <Button onPress={handleRequestPermissions} mode="elevated">
-          Grant Permission
-        </Button>
-      </View>
-    );
-  }
+  };
 
   return (
     <>
@@ -204,140 +226,70 @@ export default function index() {
         }}
       >
         <View style={{}} className="items-center">
-          <CameraView
-            mute
-            mode={mode}
-            zoom={zoom}
-            facing="back"
-            autofocus="on"
-            pictureSize={pictureSize}
-            videoQuality={videoQuality}
-            videoStabilizationMode={videoStabilization}
-            ref={(ref) => setcamera(ref)}
+          <AnimatedCamera
+            animatedProps={animatedProps}
+            isActive={isActive}
+            ref={cameraRef}
+            device={camera.device}
+            format={camera.format}
+            photo={true}
+            video={true}
+            audio={false}
+            fps={fps}
+            photoHdr={false}
+            videoHdr={false}
+            lowLightBoost={false}
+            isMirrored={false}
+            enableLocation={false}
+            isTVSelectable
+            enableFpsGraph
+            photoQualityBalance="quality"
+            videoStabilizationMode="off"
+            resizeMode="cover"
+            androidPreviewViewType="surface-view"
             className="w-[95vw] h-[95vw] my-[5vw]"
           />
         </View>
         <View className="flex-grow">
           <View className="flex-row flex-grow">
-            <View className="items-center justify-end flex-grow p-2 space-y-2">
-              {mode === "video" ? (
-                <>
-                  <IconButton
-                    icon="image"
-                    mode="contained"
-                    onPress={showResDialog}
-                  />
-                </>
-              ) : (
-                <>
-                  <IconButton
-                    icon="image"
-                    mode="contained"
-                    onPress={showPictureTypesDialog}
-                  />
-                </>
-              )}
-              <IconButton
-                icon="settings"
-                mode="contained"
-                onPress={() => router.navigate("settings")}
-              />
-            </View>
-            <View className="flex-grow justify-end">
-              <List.Section>
-                <List.Item
-                  title="Zoom"
-                  right={() => <Text>{(zoom * 10).toPrecision(2)}x</Text>}
-                />
-                <Slider
-                  minValue={0}
-                  maxValue={1}
-                  step={0.1}
-                  value={zoom}
-                  onValueChange={setzoom}
-                />
-              </List.Section>
-            </View>
-          </View>
-          <View className="flex-row items-center justify-evenly py-4">
-            <Pressable onPress={() => router.navigate("preview")}>
-              <Image
-                source={
-                  lastCapturedUri
-                    ? {
-                        uri: lastCapturedUri,
-                      }
-                    : require("../../assets/icon.png")
-                }
-                className="w-16 h-16 rounded-full"
-              />
-            </Pressable>
-            <TouchableOpacity
-              onPress={handleCapture}
-              className="w-20 h-20 rounded-full"
-              style={{
-                backgroundColor: isrecording
-                  ? colors.scrim
-                  : colors.onSurfaceVariant,
-                borderWidth: 4,
-                borderColor: colors.outline,
-              }}
+            <VirticalCameraMenu
+              mode={mode}
+              onShowDevicesDialog={showDevicesDialog}
+              onShowFormatsDialog={showFormatsDialog}
+              onShowPictureTypesDialog={showPictureTypesDialog}
+              onShowVideoTypesDialog={showVideoTypesDialog}
             />
-            <IconButton
-              size={40}
-              icon={mode === "video" ? "camera" : "videocam"}
-              onPress={toggleCameraMode}
+            <CameraSlidersMenu
+              mode={mode}
+              iso={iso}
+              exposure={exposure}
+              zoom={zoom}
+              isoSlider={isoSlider}
+              exposureSlider={exposureSlider}
+              zoomSlider={zoomSlider}
             />
           </View>
+          <CameraMainMenu
+            mode={mode}
+            onCapture={handleCapture}
+            isRecording={isRecording}
+            lastCapturedUri={lastCapturedUri}
+            onToggleCameraMode={toggleCameraMode}
+          />
         </View>
       </View>
-      <Portal>
-        <Dialog visible={isResDialogVisible} onDismiss={hideResDialog}>
-          <Dialog.Title>Resolution</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group
-              value={videoQuality}
-              onValueChange={(value: VideoQuality) => setvideoQuality(value)}
-            >
-              {videoQualities.map((item) => (
-                <RadioButton.Item
-                  key={item.toString()}
-                  label={item}
-                  value={item}
-                />
-              ))}
-            </RadioButton.Group>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideResDialog}>Cancel</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-      <Portal>
-        <Dialog
-          visible={isPictureTypesDialogVisible}
-          onDismiss={hidePictureTypesDialog}
-        >
-          <Dialog.Title>Image Types</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group
-              value={imageType}
-              onValueChange={(value: ImageType) => setimageType(value)}
-            >
-              {imageTypes.map((item) => (
-                <RadioButton.Item
-                  key={item.toString()}
-                  label={item}
-                  value={item}
-                />
-              ))}
-            </RadioButton.Group>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hidePictureTypesDialog}>Cancel</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <></>
     </>
   );
+}
+
+async function addAsset(uri: string) {
+  const imagesDir = "AstroCam";
+  const asset = await MediaLibrary.createAssetAsync(uri);
+  const album = await MediaLibrary.getAlbumAsync(imagesDir);
+  if (!album) {
+    await MediaLibrary.createAlbumAsync(imagesDir, asset, false);
+  } else {
+    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+  }
 }
