@@ -114,14 +114,14 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {device.name}
+                    {device.name.split(" ").slice(0, 2).join(" ")}
                   </Button>
                 }
               >
                 {devices.map((item, index) => (
                   <Menu.Item
                     key={index}
-                    title={item.name}
+                    title={item.name.split(" ").slice(0, 2).join(" ")}
                     onPress={() => {
                       setcameraDevice(item);
                       hideDeviceMenu;
