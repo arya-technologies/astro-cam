@@ -43,7 +43,7 @@ export default function index() {
         data={assets}
         renderItem={({ item }) =>
           item.mediaType === "video" ? (
-            <VideoPreview key={item.id} videoUri={item.uri} />
+            <VideoPreview key={item.id} />
           ) : (
             <ImagePreview key={item.id} imageUri={item.uri} />
           )
