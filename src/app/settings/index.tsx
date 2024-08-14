@@ -3,20 +3,24 @@ import {
   ImageTypes,
   setappearance,
   setcameraDevice,
-  setimageType,
-  setvideoType,
-  setvideoCodec,
-  setvideoBitRate,
-  setvideoAntiFlicker,
+  setcameraFormat,
+  setimage,
+  setvideo,
+  ThemeProps,
   themes,
   VideoBitRates,
   VideoCodecs,
   VideoTypes,
 } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Icon, List, Menu, Switch } from "react-native-paper";
-import { useCameraDevices, useCameraFormat } from "react-native-vision-camera";
+import {
+  CameraDevice,
+  CameraDeviceFormat,
+  useCameraDevices,
+  useCameraFormat,
+} from "react-native-vision-camera";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function Appearance() {
@@ -26,26 +30,31 @@ export default function Appearance() {
   );
 
   const devices = useCameraDevices();
+  const [device, setdevice] = useState<CameraDevice>(camera.device);
   const [isDeviceMenuVisible, setisDeviceMenuVisible] = useState(false);
   const showDeviceMenu = () => setisDeviceMenuVisible(true);
   const hideDeviceMenu = () => setisDeviceMenuVisible(false);
 
   const formats = useCameraFormat(camera.device, [{ photoAspectRatio: 1 / 1 }]);
+  const [format, setformat] = useState<CameraDeviceFormat>(camera.format);
   const [isFormatMenuVisible, setisFormatMenuVisible] = useState(false);
   const showFormatMenu = () => setisFormatMenuVisible(true);
   const hideFormatMenu = () => setisFormatMenuVisible(false);
 
   const imageTypes: ImageTypes[] = ["raw", "png", "jpg"];
+  const [imageType, setimageType] = useState<ImageTypes>(image.imageType);
   const [isImageTypesMenuVisible, setisImageTypesMenuVisible] = useState(false);
   const showImageTypesMenu = () => setisImageTypesMenuVisible(true);
   const hideImageTypesMenu = () => setisImageTypesMenuVisible(false);
 
   const videoTypes: VideoTypes[] = ["mov", "mp4"];
+  const [videoType, setvideoType] = useState<VideoTypes>(video.videoType);
   const [isVideoTypesMenuVisible, setisVideoTypesMenuVisible] = useState(false);
   const showVideoTypesMenu = () => setisVideoTypesMenuVisible(true);
   const hideVideoTypesMenu = () => setisVideoTypesMenuVisible(false);
 
   const videoCodecs: VideoCodecs[] = ["h265", "h264"];
+  const [videoCodec, setvideoCodec] = useState<VideoCodecs>(video.videoCodec);
   const [isVideoCodecMenuVisible, setisVideoCodecMenuVisible] = useState(false);
   const showVideoCodecMenu = () => setisVideoCodecMenuVisible(true);
   const hideVideoaCodecMenu = () => setisVideoCodecMenuVisible(false);
@@ -57,17 +66,36 @@ export default function Appearance() {
     "high",
     "extra-high",
   ];
+  const [videoBitRate, setvideoBitRate] = useState<VideoBitRates>(
+    video.videoBitRate,
+  );
   const [isVideoBitRateMenuVisible, setisVideoBitRateMenuVisible] =
     useState(false);
   const showVideoBitRateMenu = () => setisVideoBitRateMenuVisible(true);
   const hideVideoaBitRateMenu = () => setisVideoBitRateMenuVisible(false);
 
-  const toggleVideoAntiFlicker = () =>
-    dispatch(setvideoAntiFlicker(!video.antiFlicker));
+  const [antiFlicker, setantiFlicker] = useState<boolean>(video.antiFlicker);
 
+  const [theme, settheme] = useState<ThemeProps>(appearance.theme);
   const [isThemeMenuVisible, setisThemeMenuVisible] = useState(false);
   const showThemeMenu = () => setisThemeMenuVisible(true);
   const hideThemeMenu = () => setisThemeMenuVisible(false);
+
+  useEffect(() => {
+    dispatch(setappearance({ theme }));
+  }, [theme]);
+  useEffect(() => {
+    dispatch(setcameraDevice(device));
+  }, [device]);
+  useEffect(() => {
+    dispatch(setcameraFormat(format));
+  }, [format]);
+  useEffect(() => {
+    dispatch(setimage({ imageType }));
+  }, [imageType]);
+  useEffect(() => {
+    dispatch(setvideo({ videoType, videoCodec, videoBitRate, antiFlicker }));
+  }, [videoType, videoCodec, videoBitRate, antiFlicker]);
 
   return (
     <>
@@ -87,7 +115,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {camera.device.name}
+                    {device.name}
                   </Button>
                 }
               >
@@ -96,7 +124,7 @@ export default function Appearance() {
                     key={index}
                     title={item.name}
                     onPress={() => {
-                      dispatch(setcameraDevice(item));
+                      setcameraDevice(item);
                       hideDeviceMenu;
                     }}
                   />
@@ -120,7 +148,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {image.imageType}
+                    {imageType}
                   </Button>
                 }
               >
@@ -129,7 +157,7 @@ export default function Appearance() {
                     key={index}
                     title={item}
                     onPress={() => {
-                      dispatch(setimageType(item));
+                      setimageType(item);
                       hideImageTypesMenu;
                     }}
                   />
@@ -153,7 +181,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {video.videoType}
+                    {videoType}
                   </Button>
                 }
               >
@@ -162,7 +190,7 @@ export default function Appearance() {
                     key={index}
                     title={item}
                     onPress={() => {
-                      dispatch(setvideoType(item));
+                      setvideoType(item);
                       hideVideoTypesMenu;
                     }}
                   />
@@ -183,7 +211,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {video.videoCodec}
+                    {videoCodec}
                   </Button>
                 }
               >
@@ -192,7 +220,7 @@ export default function Appearance() {
                     key={index}
                     title={item}
                     onPress={() => {
-                      dispatch(setvideoCodec(item));
+                      setvideoCodec(item);
                       hideVideoaCodecMenu;
                     }}
                   />
@@ -213,7 +241,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {video.videoBitRate}
+                    {videoBitRate}
                   </Button>
                 }
               >
@@ -222,7 +250,7 @@ export default function Appearance() {
                     key={index}
                     title={item}
                     onPress={() => {
-                      dispatch(setvideoBitRate(item));
+                      setvideoBitRate(item);
                       hideVideoaBitRateMenu;
                     }}
                   />
@@ -234,10 +262,7 @@ export default function Appearance() {
             left={() => <Icon source="camera" size={24} />}
             title="Anti Flicker"
             right={() => (
-              <Switch
-                value={video.antiFlicker}
-                onValueChange={toggleVideoAntiFlicker}
-              />
+              <Switch value={antiFlicker} onValueChange={setantiFlicker} />
             )}
           />
         </List.Section>
@@ -256,7 +281,7 @@ export default function Appearance() {
                     icon="chevron-expand"
                     mode="elevated"
                   >
-                    {appearance.theme.label}
+                    {theme.label}
                   </Button>
                 }
               >
@@ -265,7 +290,7 @@ export default function Appearance() {
                     key={index}
                     title={item.label}
                     onPress={() => {
-                      dispatch(setappearance({ theme: item }));
+                      settheme(item);
                       hideThemeMenu;
                     }}
                   />

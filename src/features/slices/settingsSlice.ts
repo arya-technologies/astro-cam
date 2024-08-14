@@ -115,20 +115,14 @@ export const settingsSlice = createSlice({
     ) => {
       camera.format = payload;
     },
-    setimageType: ({ image }, { payload }: PayloadAction<ImageTypes>) => {
-      image.imageType = payload;
+    setimage: ({ image }, { payload }: PayloadAction<ImageProps>) => {
+      image.imageType = payload.imageType;
     },
-    setvideoType: ({ video }, { payload }: PayloadAction<VideoTypes>) => {
-      video.videoType = payload;
-    },
-    setvideoCodec: ({ video }, { payload }: PayloadAction<VideoCodecs>) => {
-      video.videoCodec = payload;
-    },
-    setvideoBitRate: ({ video }, { payload }: PayloadAction<VideoBitRates>) => {
-      video.videoBitRate = payload;
-    },
-    setvideoAntiFlicker: ({ video }, { payload }: PayloadAction<boolean>) => {
-      video.antiFlicker = payload;
+    setvideo: ({ video }, { payload }: PayloadAction<VideoProps>) => {
+      video.videoType = payload.videoType;
+      video.videoCodec = payload.videoCodec;
+      video.videoBitRate = payload.videoBitRate;
+      video.antiFlicker = payload.antiFlicker;
     },
     setappearance: (
       { appearance },
@@ -142,13 +136,10 @@ export const settingsSlice = createSlice({
 export const {
   setcamera,
   setappearance,
+  setimage,
+  setvideo,
   setcameraDevice,
   setcameraFormat,
-  setimageType,
-  setvideoType,
-  setvideoCodec,
-  setvideoBitRate,
-  setvideoAntiFlicker,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
