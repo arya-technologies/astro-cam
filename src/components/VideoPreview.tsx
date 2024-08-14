@@ -1,5 +1,5 @@
-import { useVideoPlayer, VideoPlayer, VideoView } from "expo-video";
-import { useEffect, useRef, useState } from "react";
+import { VideoPlayer, VideoView } from "expo-video";
+import { useRef } from "react";
 
 type VideoPreviewProps = {
   player: VideoPlayer;
