@@ -103,7 +103,6 @@ export default function Appearance() {
         <List.Section>
           <List.Subheader>Camera Settings</List.Subheader>
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Device"
             right={() => (
               <Menu
@@ -134,7 +133,6 @@ export default function Appearance() {
           />
         </List.Section>
         <List.Section>
-          <List.Subheader>Picture Settinsg</List.Subheader>
           <List.Item
             left={() => <Icon source="camera" size={24} />}
             title="Image Type"
@@ -169,7 +167,6 @@ export default function Appearance() {
         <List.Section>
           <List.Subheader>Video Settings</List.Subheader>
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Video Type"
             right={() => (
               <Menu
@@ -199,7 +196,6 @@ export default function Appearance() {
             )}
           />
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Video Codec"
             right={() => (
               <Menu
@@ -229,7 +225,6 @@ export default function Appearance() {
             )}
           />
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Video BitRate"
             right={() => (
               <Menu
@@ -259,7 +254,6 @@ export default function Appearance() {
             )}
           />
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Anti Flicker"
             right={() => (
               <Switch value={antiFlicker} onValueChange={setantiFlicker} />
@@ -269,7 +263,6 @@ export default function Appearance() {
         <List.Section>
           <List.Subheader>Appearance</List.Subheader>
           <List.Item
-            left={() => <Icon source="color-wand" size={24} />}
             title="Theme"
             right={() => (
               <Menu
