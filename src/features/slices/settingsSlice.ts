@@ -1,8 +1,40 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { CameraDevice, CameraDeviceFormat } from "react-native-vision-camera";
+import {
+  Camera,
+  CameraDevice,
+  CameraDeviceFormat,
+} from "react-native-vision-camera";
 
-export type ThemeProps = "system" | "light" | "dark" | "pureBlack";
+export type ThemesProps = "system" | "light" | "dark" | "pureBlack";
+export type ThemeProps = {
+  label: string;
+  value: string;
+  icon: string;
+};
+
+export const themes: ThemeProps[] = [
+  {
+    label: "System",
+    value: "system",
+    icon: "color-wand",
+  },
+  {
+    label: "Light",
+    value: "light",
+    icon: "sunny",
+  },
+  {
+    label: "Dark",
+    value: "dark",
+    icon: "cloudy-night",
+  },
+  {
+    label: "Pure Black",
+    value: "pure-black",
+    icon: "moon",
+  },
+];
 
 export type CameraModes = "picture" | "video";
 export type ImageTypes = "raw" | "png" | "jpg";
@@ -16,43 +48,53 @@ export type VideoBitRates =
   | "high"
   | "extra-high";
 
-type AppearanceProps = {
-  theme: ThemeProps;
-};
-type CameraProps = {
+interface CameraProps {
+  device: CameraDevice;
+  format: CameraDeviceFormat;
   mode: CameraModes;
-  device?: CameraDevice;
-  format?: CameraDeviceFormat;
-};
-type ControlsProps = {
   autoFocus: boolean;
+}
+interface ImageProps {
   imageType: ImageTypes;
+}
+interface VideoProps {
   videoType: VideoTypes;
   videoCodec: VideoCodecs;
   videoBitRate: VideoBitRates;
   antiFlicker: boolean;
-};
-
-export interface SettingsProps {
-  camera: CameraProps;
-  appearance: AppearanceProps;
-  controls: ControlsProps;
 }
+interface AppearanceProps {
+  theme: ThemeProps;
+}
+
+interface SettingsProps {
+  camera: CameraProps;
+  image: ImageProps;
+  video: VideoProps;
+  appearance: AppearanceProps;
+}
+
+const device = Camera.getAvailableCameraDevices()[0];
+const format = device.formats[0];
 
 const initialState: SettingsProps = {
   camera: {
+    device,
+    format,
     mode: "picture",
-  },
-  appearance: {
-    theme: "system",
-  },
-  controls: {
     autoFocus: false,
+  },
+  image: {
     imageType: "jpg",
+  },
+  video: {
     videoType: "mov",
     videoCodec: "h265",
     videoBitRate: "normal",
     antiFlicker: false,
+  },
+  appearance: {
+    theme: themes[0],
   },
 };
 
@@ -61,9 +103,23 @@ export const settingsSlice = createSlice({
   initialState,
   reducers: {
     setcamera: ({ camera }, { payload }: PayloadAction<CameraProps>) => {
-      camera.device = payload.device;
-      camera.format = payload.format;
       camera.mode = payload.mode;
+      camera.autoFocus = payload.autoFocus;
+    },
+    setcameraDevice: ({ camera }, { payload }) => {
+      camera.device = payload;
+    },
+    setcameraFormat: ({ camera }, { payload }) => {
+      camera.format = payload;
+    },
+    setimage: ({ image }, { payload }: PayloadAction<ImageProps>) => {
+      image.imageType = payload.imageType;
+    },
+    setvideo: ({ video }, { payload }: PayloadAction<VideoProps>) => {
+      video.videoType = payload.videoType;
+      video.videoCodec = payload.videoCodec;
+      video.videoBitRate = payload.videoBitRate;
+      video.antiFlicker = payload.antiFlicker;
     },
     setappearance: (
       { appearance },
@@ -71,17 +127,16 @@ export const settingsSlice = createSlice({
     ) => {
       appearance.theme = payload.theme;
     },
-    setcontrols: ({ controls }, { payload }: PayloadAction<ControlsProps>) => {
-      controls.imageType = payload.imageType;
-      controls.videoType = payload.videoType;
-      controls.videoCodec = payload.videoCodec;
-      controls.videoBitRate = payload.videoBitRate;
-      controls.antiFlicker = payload.antiFlicker;
-      controls.autoFocus = payload.autoFocus;
-    },
   },
 });
 
-export const { setcamera, setappearance, setcontrols } = settingsSlice.actions;
+export const {
+  setcamera,
+  setappearance,
+  setimage,
+  setvideo,
+  setcameraDevice,
+  setcameraFormat,
+} = settingsSlice.actions;
 
 export default settingsSlice.reducer;

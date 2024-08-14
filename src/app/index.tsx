@@ -9,7 +9,6 @@ import {
   CameraModes,
   ImageTypes,
   setcamera,
-  setcontrols,
   VideoBitRates,
   VideoCodecs,
   VideoTypes,
@@ -44,7 +43,7 @@ export default function index() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { controls, camera } = useSelector(
+  const { camera, video, image } = useSelector(
     (state: RootState) => state.settings,
   );
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -57,66 +56,59 @@ export default function index() {
 
   const cameraRef = useRef<Camera>(null);
   const devices = useCameraDevices();
-  const [device, setdevice] = useState<CameraDevice>(
-    camera.device || devices[0],
-  );
+  // const [device, setdevice] = useState<CameraDevice>(
+  //   camera.device || devices[0],
+  // );
 
   const [mode, setmode] = useState<CameraModes>(camera.mode || "picture");
-  const [imageType, setimageType] = useState<ImageTypes>(controls.imageType);
-  const [videoType, setvideoType] = useState<VideoTypes>(controls.videoType);
-  const [videoCodec, setvideoCodec] = useState<VideoCodecs>(
-    controls.videoCodec,
-  );
-  const [videoBitRate, setvideoBitRate] = useState<VideoBitRates>(
-    controls.videoBitRate,
-  );
-  const [antiFlicker, setantiFlicker] = useState<boolean>(controls.antiFlicker);
 
-  const [videoRes, setvideoRes] = useState<number>(
-    device?.formats[0].videoHeight!,
-  );
-  const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
-  const videoFormat = useCameraFormat(device, [
-    {
-      videoAspectRatio: 9 / 16,
-      videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
-    },
-  ]);
-  const format = camera.format || mode === "video" ? videoFormat : imageFormat;
+  // const [videoRes, setvideoRes] = useState<number>(
+  //   device?.formats[0].videoHeight!,
+  // );
+  // const imageFormat = useCameraFormat(device, [{ photoAspectRatio: 1 / 1 }]);
+  // const videoFormat = useCameraFormat(device, [
+  //   {
+  //     videoAspectRatio: 9 / 16,
+  //     videoResolution: { height: videoRes, width: (videoRes / 9) * 16 },
+  //   },
+  // ]);
+  // const format = camera.format || mode === "video" ? videoFormat : imageFormat;
 
-  const [fps, setfps] = useState(controls.antiFlicker ? 50 : format?.maxFps);
-  const [autoFocus, setautoFocus] = useState<boolean>(controls.autoFocus);
-  const [focusDepth, setfocusDepth] = useState(device?.minFocusDistance);
+  const [fps, setfps] = useState(
+    video.antiFlicker ? 50 : camera.format?.maxFps,
+  );
+  const [autoFocus, setautoFocus] = useState<boolean>(camera.autoFocus);
+  const [focusDepth, setfocusDepth] = useState(camera.device.minFocusDistance);
 
   const isoSlider = useSharedValue(0);
   const iso = useDerivedValue(() => {
-    if (format === undefined) return 0;
+    if (camera.format === undefined) return 0;
     return interpolate(
       isoSlider.value,
       [0, 100],
-      [format.minISO, format.maxISO],
+      [camera.format.minISO, camera.format.maxISO],
     );
-  }, [isoSlider, device]);
+  }, [isoSlider, camera.device]);
 
   const exposureSlider = useSharedValue(50);
   const exposure = useDerivedValue(() => {
-    if (device === null) return 0;
+    if (camera.device === null) return 0;
     return interpolate(
       exposureSlider.value,
       [0, 100],
-      [device.minExposure, device.maxExposure],
+      [camera.device.minExposure, camera.device.maxExposure],
     );
-  }, [exposureSlider, device]);
+  }, [exposureSlider, camera.device]);
 
   const zoomSlider = useSharedValue(0);
   const zoom = useDerivedValue(() => {
-    if (device === null) return 0;
+    if (camera.device === null) return 0;
     return interpolate(
       zoomSlider.value,
       [0, 100],
-      [device.minZoom, device.maxZoom],
+      [camera.device.minZoom, camera.device.maxZoom],
     );
-  }, [zoomSlider, device]);
+  }, [zoomSlider, camera.device]);
 
   const animatedProps = useAnimatedProps<CameraProps>(
     () => ({ zoom: zoom.value, exposure: exposure.value }),
@@ -165,27 +157,27 @@ export default function index() {
     })();
   }, [hasPermission, hasMediaPermission]);
 
-  useEffect(() => {
-    dispatch(
-      setcontrols({
-        videoType,
-        imageType,
-        videoCodec,
-        videoBitRate,
-        antiFlicker,
-        autoFocus,
-      }),
-    );
-  }, [videoType, imageType, videoCodec, videoBitRate, antiFlicker, autoFocus]);
-  useEffect(() => {
-    dispatch(
-      setcamera({
-        device,
-        format,
-        mode,
-      }),
-    );
-  }, [device, format, mode]);
+  // useEffect(() => {
+  //   dispatch(
+  //     setcontrols({
+  //       videoType,
+  //       imageType,
+  //       videoCodec,
+  //       videoBitRate,
+  //       antiFlicker,
+  //       autoFocus,
+  //     }),
+  //   );
+  // }, [videoType, imageType, videoCodec, videoBitRate, antiFlicker, autoFocus]);
+  // useEffect(() => {
+  //   dispatch(
+  //     setcamera({
+  //       device,
+  //       format,
+  //       mode,
+  //     }),
+  //   );
+  // }, [device, format, mode]);
 
   if (!hasPermission || !hasMediaPermission?.granted) {
     return <Permissions />;
@@ -207,9 +199,9 @@ export default function index() {
       if (!isRecording) {
         setisRecording(true);
         cameraRef.current?.startRecording({
-          videoCodec,
-          videoBitRate,
-          fileType: videoType,
+          videoCodec: video.videoCodec,
+          videoBitRate: video.videoBitRate,
+          fileType: video.videoType,
           path: "/storage/emulated/0/Pictures/AstroCam/",
           onRecordingFinished: (video) => {
             setlastCapturedUri(`file://${video.path}`);
@@ -238,8 +230,8 @@ export default function index() {
             animatedProps={animatedProps}
             isActive={isActive}
             ref={cameraRef}
-            device={device!}
-            format={format}
+            device={camera.device}
+            format={camera.format}
             photo={true}
             video={true}
             audio={false}
@@ -286,41 +278,7 @@ export default function index() {
           />
         </View>
       </View>
-      <>
-        <SelectFormatDialog
-          title="Format"
-          videoRes={videoRes}
-          minRes={device.formats.at(-1)?.videoHeight!}
-          maxRes={device.formats[0].videoHeight!}
-          setVideoRes={setvideoRes}
-          visible={isFormatsDialogVisible}
-          onDismiss={hideFormatsDialog}
-        />
-        <SelectDeviceDialog
-          data={devices}
-          title="Devices"
-          value={device.id}
-          setValue={setdevice}
-          visible={isDevicesDialogVisible}
-          onDismiss={hideDevicesDialog}
-        />
-        <SelectDialog
-          data={["mov", "mp4"]}
-          title="Video Type"
-          value={videoType}
-          setValue={setvideoType}
-          visible={isVideoTypesDialogVisible}
-          onDismiss={hideVideoTypesDialog}
-        />
-        <SelectDialog
-          data={["raw", "png", "jpg"]}
-          title="Image Type"
-          value={imageType}
-          setValue={setimageType}
-          visible={isPictureTypesDialogVisible}
-          onDismiss={hidePictureTypesDialog}
-        />
-      </>
+      <></>
     </>
   );
 }
