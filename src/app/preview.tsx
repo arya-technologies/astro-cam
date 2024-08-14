@@ -19,7 +19,6 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AssetInfo from "@/components/AssetInfo";
 import Slider from "@/components/Slider";
-import { useVideoPlayer } from "expo-video";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -84,28 +83,28 @@ export default function preview() {
   };
 
   const [isplaying, setisPlaying] = useState<boolean>(false);
-  const player = useVideoPlayer(asset?.uri!, (player) => {
-    // player.loop = true;
-  });
-  useEffect(() => {
-    const subscription = player.addListener(
-      "playingChange",
-      (isplaying: boolean) => {
-        setisPlaying(isplaying);
-      },
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, [player]);
+  // const player = useVideoPlayer(asset?.uri!, (player) => {
+  //   // player.loop = true;
+  // });
+  // useEffect(() => {
+  //   const subscription = player.addListener(
+  //     "playingChange",
+  //     (isplaying: boolean) => {
+  //       setisPlaying(isplaying);
+  //     },
+  //   );
+  //
+  //   return () => {
+  //     subscription.remove();
+  //   };
+  // }, [player]);
 
   const renderItem = (item: MediaLibrary.Asset) => {
     return (
       <>
         <Pressable onPress={handleFullScreen} style={{ width, height }}>
           {item.mediaType === "video" ? (
-            <VideoPreview key={item.id} player={player} />
+            <VideoPreview key={item.id} />
           ) : (
             <ImagePreview key={item.id} imageUri={item.uri} />
           )}
@@ -160,9 +159,7 @@ export default function preview() {
                   icon={isplaying ? "stop" : "play"}
                   onPress={() => {
                     if (!isplaying) {
-                      player.play();
                     } else {
-                      player.pause();
                     }
                     setisPlaying(!isplaying);
                   }}

@@ -1,11 +1,12 @@
-import { VideoPlayer, VideoView } from "expo-video";
+// import { VideoPlayer, VideoView } from "expo-video";
 import { useRef } from "react";
+import { View } from "react-native";
 
 type VideoPreviewProps = {
-  player: VideoPlayer;
+  // player: VideoPlayer;
 };
 
-export default function VideoPreview({ player }: VideoPreviewProps) {
+export default function VideoPreview({}: VideoPreviewProps) {
   const playerRef = useRef(null);
 
   // const handlePlay = async () => {
@@ -16,14 +17,15 @@ export default function VideoPreview({ player }: VideoPreviewProps) {
   //   }
   // };
 
-  return (
-    <VideoView
-      ref={playerRef}
-      player={player}
-      nativeControls={false}
-      allowsFullscreen
-      contentFit="contain"
-      className="w-full h-full absolute -z-10 pointer-events-none"
-    />
-  );
+  return <View></View>;
 }
+// return (
+//   <VideoView
+//     ref={playerRef}
+//     player={player}
+//     nativeControls={false}
+//     allowsFullscreen
+//     contentFit="contain"
+//     className="w-full h-full absolute -z-10 pointer-events-none"
+//   />
+// );
