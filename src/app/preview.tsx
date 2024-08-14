@@ -1,24 +1,21 @@
+import AssetInfo from "@/components/AssetInfo";
 import ImagePreview from "@/components/ImagePreview";
 import PreviewMenu from "@/components/PreviewMenu";
-import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import VideoPreview from "@/components/VideoPreview";
+import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
-import * as StatusBar from "expo-status-bar";
-import * as NavigationBar from "expo-navigation-bar";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import { Appbar, IconButton } from "react-native-paper";
 import Animated, {
-  interpolate,
   LinearTransition,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AssetInfo from "@/components/AssetInfo";
-import Slider from "@/components/Slider";
 
 export default function preview() {
   const { colors } = useAppTheme();
@@ -104,7 +101,7 @@ export default function preview() {
       <>
         <Pressable onPress={handleFullScreen} style={{ width, height }}>
           {item.mediaType === "video" ? (
-            <VideoPreview key={item.id} />
+            <VideoPreview key={item.id} videoUri={item.uri} />
           ) : (
             <ImagePreview key={item.id} imageUri={item.uri} />
           )}

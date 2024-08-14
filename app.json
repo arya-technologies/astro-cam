@@ -42,6 +42,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-video",
       [
         "react-native-vision-camera",
         {
@@ -54,18 +55,6 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
-        }
-      ],
-      [
-        "react-native-video",
-        {
-          "enableNotificationControls": false,
-          "androidExtensions": {
-            "useExoplayerRtsp": false,
-            "useExoplayerSmoothStreaming": false,
-            "useExoplayerHls": false,
-            "useExoplayerDash": false
-          }
         }
       ]
     ],

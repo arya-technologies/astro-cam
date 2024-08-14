@@ -1,31 +1,46 @@
-// import { VideoPlayer, VideoView } from "expo-video";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 type VideoPreviewProps = {
-  // player: VideoPlayer;
+  videoUri: string;
 };
 
-export default function VideoPreview({}: VideoPreviewProps) {
-  const playerRef = useRef(null);
+export default function VideoPreview({ videoUri }: VideoPreviewProps) {
+  const [isfullscreen, setisfullscreen] = useState<boolean>(false);
 
-  // const handlePlay = async () => {
-  //   if (!isplaying) {
-  //     player.replay();
-  //   } else {
-  //     player.pause();
-  //   }
-  // };
+  const ref = useRef(null);
+  const [isplaying, setisPlaying] = useState<boolean>(true);
 
-  return <View></View>;
+  const player = useVideoPlayer(videoUri, (player) => {});
+
+  const handleFullscreen = () => {
+    if (!isfullscreen) {
+      setisfullscreen(true);
+    } else {
+      setisfullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const subscription = player.addListener("playingChange", (isplaying) => {
+      setisPlaying(isplaying);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
+
+  return (
+    <View className="w-screen h-screen items-center justify-center">
+      <VideoView
+        ref={ref}
+        player={player}
+        allowsFullscreen
+        contentFit="contain"
+        className="w-full h-full absolute -z-10"
+      />
+    </View>
+  );
 }
-// return (
-//   <VideoView
-//     ref={playerRef}
-//     player={player}
-//     nativeControls={false}
-//     allowsFullscreen
-//     contentFit="contain"
-//     className="w-full h-full absolute -z-10 pointer-events-none"
-//   />
-// );
