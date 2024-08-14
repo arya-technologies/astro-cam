@@ -31,7 +31,7 @@ export const themes: ThemeProps[] = [
   },
   {
     label: "Pure Black",
-    value: "pure-black",
+    value: "pureBlack",
     icon: "moon",
   },
 ];

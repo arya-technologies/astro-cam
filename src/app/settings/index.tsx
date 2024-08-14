@@ -134,7 +134,6 @@ export default function Appearance() {
         </List.Section>
         <List.Section>
           <List.Item
-            left={() => <Icon source="camera" size={24} />}
             title="Image Type"
             right={() => (
               <Menu
