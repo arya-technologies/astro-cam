@@ -19,11 +19,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.notscripter.astrocam",
-      "infoPlist": {
-        "NSCameraUsageDescription": "[REASON]",
-        "NSMicrophoneUsageDescription": "[REASON]"
-      }
+      "bundleIdentifier": "com.notscripter.astrocam"
     },
     "android": {
       "adaptiveIcon": {
