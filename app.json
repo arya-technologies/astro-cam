@@ -42,7 +42,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-video",
       [
         "react-native-vision-camera",
         {

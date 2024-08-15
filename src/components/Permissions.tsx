@@ -1,36 +1,39 @@
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import * as Linking from "expo-linking";
 import * as MediaLibrary from "expo-media-library";
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { useCameraPermission } from "react-native-vision-camera";
 
-type PermissionsProps = {};
+type PermissionsProps = {
+  hasCameraPermission: boolean;
+  hasMediaPermission: boolean;
+  requestCameraPermisiion: () => void;
+  requestMediaPermisiion: () => void;
+  canAskAgain: boolean;
+};
 
-export default function Permissions({}: PermissionsProps) {
+export default function Permissions({
+  hasCameraPermission,
+  hasMediaPermission,
+  requestCameraPermisiion,
+  requestMediaPermisiion,
+  canAskAgain,
+}: PermissionsProps) {
   const { colors } = useAppTheme();
-
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const [mediaPermission, requestMediaPermission] =
-    MediaLibrary.usePermissions();
-
-  const handleRequestPermissions = () => {
-    Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
-    if (mediaPermission?.canAskAgain) {
-      requestPermissions();
-    } else {
-      Linking.openSettings();
-    }
-  };
+  console.log(hasCameraPermission, hasMediaPermission);
 
   const requestPermissions = () => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-    if (!mediaPermission?.granted) {
-      requestMediaPermission();
-    }
+    requestCameraPermisiion();
+    requestMediaPermisiion();
+    // if (!hasCameraPermission) {
+    // }
+    // if (!hasMediaPermission) {
+    // }
+    // if (!hasCameraPermission && !hasMediaPermission) {
+    //   Linking.openSettings();
+    // }
+    // Linking.sendIntent("android.settings.REQUEST_MANAGE_MEDIA");
   };
 
   return (
@@ -39,7 +42,7 @@ export default function Permissions({}: PermissionsProps) {
       style={{ backgroundColor: colors.surface }}
     >
       <Text>We need your permission to show the camera</Text>
-      <Button onPress={handleRequestPermissions} mode="elevated">
+      <Button onPress={requestPermissions} mode="elevated">
         Grant Permission
       </Button>
     </View>

@@ -7,8 +7,10 @@ import { CameraModes } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
 import { useAppState } from "@react-native-community/hooks";
 import * as MediaLibrary from "expo-media-library";
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
+import { Text } from "react-native-paper";
 import Reanimated, {
   interpolate,
   useAnimatedProps,
@@ -98,8 +100,24 @@ export default function index() {
     })();
   }, [hasPermission, hasMediaPermission]);
 
+  if (!hasMediaPermission) {
+    return (
+      <View className="bg-black">
+        <Text>No permission</Text>
+      </View>
+    );
+  }
+
   if (!hasPermission || !hasMediaPermission?.granted) {
-    return <Permissions />;
+    return (
+      <Permissions
+        hasCameraPermission={hasPermission}
+        hasMediaPermission={hasMediaPermission?.granted!}
+        requestCameraPermisiion={requestPermission}
+        requestMediaPermisiion={requestMediaPermission}
+        canAskAgain={hasMediaPermission?.canAskAgain!}
+      />
+    );
   }
 
   const toggleCameraMode = () => {
