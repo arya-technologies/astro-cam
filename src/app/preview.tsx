@@ -80,28 +80,18 @@ export default function preview() {
   };
 
   const [isplaying, setisPlaying] = useState<boolean>(false);
-  // const player = useVideoPlayer(asset?.uri!, (player) => {
-  //   // player.loop = true;
-  // });
-  // useEffect(() => {
-  //   const subscription = player.addListener(
-  //     "playingChange",
-  //     (isplaying: boolean) => {
-  //       setisPlaying(isplaying);
-  //     },
-  //   );
-  //
-  //   return () => {
-  //     subscription.remove();
-  //   };
-  // }, [player]);
 
   const renderItem = (item: MediaLibrary.Asset) => {
     return (
       <>
         <Pressable onPress={handleFullScreen} style={{ width, height }}>
           {item.mediaType === "video" ? (
-            <VideoPreview key={item.id} videoUri={item.uri} />
+            <VideoPreview
+              key={item.id}
+              videoUri={item.uri}
+              isfullscreen={isFullScreen}
+              toggleFullscreen={toggleFullScreen}
+            />
           ) : (
             <ImagePreview key={item.id} imageUri={item.uri} />
           )}

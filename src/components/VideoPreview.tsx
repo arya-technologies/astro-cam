@@ -1,46 +1,34 @@
-import { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { useRef, useState } from "react";
+import { ActivityIndicator, IconButton } from "react-native-paper";
+import Video, { VideoRef } from "react-native-video";
 
 type VideoPreviewProps = {
   videoUri: string;
+  isfullscreen: boolean;
+  toggleFullscreen: () => void;
 };
 
-export default function VideoPreview({ videoUri }: VideoPreviewProps) {
-  const [isfullscreen, setisfullscreen] = useState<boolean>(false);
+export default function VideoPreview({
+  videoUri,
+  isfullscreen,
+  toggleFullscreen,
+}: VideoPreviewProps) {
+  // const [isfullscreen, setisfullscreen] = useState<boolean>(false);
 
-  const ref = useRef(null);
+  const videoRef = useRef<VideoRef>(null);
   const [isplaying, setisPlaying] = useState<boolean>(true);
 
-  const player = useVideoPlayer(videoUri, (player) => {});
-
-  const handleFullscreen = () => {
-    if (!isfullscreen) {
-      setisfullscreen(true);
-    } else {
-      setisfullscreen(false);
-    }
-  };
-
-  useEffect(() => {
-    const subscription = player.addListener("playingChange", (isplaying) => {
-      setisPlaying(isplaying);
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [player]);
-
   return (
-    <View className="w-screen h-screen items-center justify-center">
-      <VideoView
-        ref={ref}
-        player={player}
-        allowsFullscreen
-        contentFit="contain"
-        className="w-full h-full absolute -z-10"
-      />
-    </View>
+    <Video
+      ref={videoRef}
+      muted
+      paused
+      source={{ uri: videoUri }}
+      renderLoader={<ActivityIndicator />}
+      useSecureView
+      className="w-full h-full absolute -z-10 pointer-events-none"
+    >
+      <IconButton icon={isplaying ? "stop" : "play"} />
+    </Video>
   );
 }
