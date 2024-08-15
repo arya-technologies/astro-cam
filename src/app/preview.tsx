@@ -1,28 +1,21 @@
 import AssetInfo from "@/components/AssetInfo";
-import ImagePreview from "@/components/ImagePreview";
 import PreviewList from "@/components/PreviewList";
 import PreviewMenu from "@/components/PreviewMenu";
-import VideoPreview from "@/components/VideoPreview";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import { isFulfilled } from "@reduxjs/toolkit";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Dimensions, Pressable, View } from "react-native";
+import { View } from "react-native";
 import { Appbar, IconButton } from "react-native-paper";
 import Animated, {
-  LinearTransition,
   interpolate,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function preview() {
   const { colors } = useAppTheme();
-  const { top, bottom } = useSafeAreaInsets();
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
   const [asset, setasset] = useState<MediaLibrary.Asset>();

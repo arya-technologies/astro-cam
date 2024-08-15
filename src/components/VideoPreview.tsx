@@ -26,7 +26,7 @@ export default function VideoPreview({
       source={{ uri: videoUri }}
       renderLoader={<ActivityIndicator />}
       useSecureView
-      className="w-full h-full absolute -z-10 "
+      className="w-full h-full bg-red-300"
     >
       <IconButton icon={isplaying ? "stop" : "play"} />
     </Video>

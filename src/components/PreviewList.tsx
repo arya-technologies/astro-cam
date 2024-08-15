@@ -2,10 +2,7 @@ import RenderPreviewItem from "@/components/RenderPreviewItem";
 import { Asset } from "expo-media-library";
 import React from "react";
 import { Dimensions, Pressable } from "react-native";
-import Animated, {
-  LinearTransition,
-  useAnimatedScrollHandler,
-} from "react-native-reanimated";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 interface PreviewListProps {
   data: Asset[];
@@ -24,12 +21,6 @@ export default function PreviewList({
 }: PreviewListProps) {
   const { width, height } = Dimensions.get("screen");
 
-  const handleHorizontalScroll = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      console.log(event.contentOffset.y);
-    },
-  });
-
   return (
     <Pressable
       onPress={handleFullScreen}
@@ -43,13 +34,13 @@ export default function PreviewList({
         maxToRenderPerBatch={3}
         windowSize={3}
         showsHorizontalScrollIndicator={false}
-        onScroll={handleHorizontalScroll}
-        snapToInterval={width * 0.8}
+        snapToInterval={width}
+        scrollEventThrottle={16}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 100,
         }}
         horizontal
-        snapToAlignment="start"
+        snapToAlignment="center"
         pagingEnabled
         data={data}
         initialNumToRender={2}
@@ -61,7 +52,7 @@ export default function PreviewList({
             toggleFullScreen={toggleFullScreen}
           />
         )}
-        className="w-full h-full "
+        className="w-full h-full"
         onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
         itemLayoutAnimation={LinearTransition}
         keyExtractor={(item) => item.id}
