@@ -1,9 +1,10 @@
 import AssetInfo from "@/components/AssetInfo";
 import ImagePreview from "@/components/ImagePreview";
+import PreviewList from "@/components/PreviewList";
 import PreviewMenu from "@/components/PreviewMenu";
-import RenderPreviewItem from "@/components/RenderPreviewItem";
 import VideoPreview from "@/components/VideoPreview";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
+import { isFulfilled } from "@reduxjs/toolkit";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ import { Appbar, IconButton } from "react-native-paper";
 import Animated, {
   LinearTransition,
   interpolate,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -81,10 +83,6 @@ export default function preview() {
 
   const [isplaying, setisPlaying] = useState<boolean>(false);
 
-  const renderItem = (item: MediaLibrary.Asset) => {
-    return <></>;
-  };
-
   return (
     <>
       <View
@@ -104,30 +102,12 @@ export default function preview() {
             <Appbar.Action icon="information" onPress={showInfo} />
           </Appbar.Header>
         </Animated.View>
-        <Animated.FlatList
-          renderToHardwareTextureAndroid
-          removeClippedSubviews
-          maxToRenderPerBatch={1}
-          windowSize={3}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          snapToAlignment="center"
-          pagingEnabled
+        <PreviewList
           data={assets}
-          initialNumToRender={1}
-          renderItem={({ item, index }) => (
-            <RenderPreviewItem
-              asset={item}
-              index={index}
-              isFullScreen={isFullScreen}
-              toggleFullScreen={toggleFullScreen}
-              handleFullScreen={handleFullScreen}
-            />
-          )}
-          className="w-full h-full absolute -z-10"
-          onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
-          itemLayoutAnimation={LinearTransition}
-          keyExtractor={(item) => item.id}
+          setasset={setasset}
+          isFullScreen={isFullScreen}
+          toggleFullScreen={toggleFullScreen}
+          handleFullScreen={handleFullScreen}
         />
         {asset && (
           <Animated.View
