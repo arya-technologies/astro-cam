@@ -1,20 +1,23 @@
 import React from "react";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
+import * as MediaLibrary from "expo-media-library";
 
 type DeleteAssetDialogProps = {
   visible: boolean;
   onDismiss: () => void;
-  onDelete: () => void;
   assetId: string;
   assetName: string;
 };
 export default function DeleteAssetDialog({
   visible,
   onDismiss,
-  onDelete,
   assetId,
   assetName,
 }: DeleteAssetDialogProps) {
+  const handleDelete = async () => {
+    await MediaLibrary.deleteAssetsAsync([assetId]);
+  };
+
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
@@ -25,7 +28,7 @@ export default function DeleteAssetDialog({
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss}>Cancel</Button>
-          <Button onPress={onDelete}>Confirm</Button>
+          <Button onPress={handleDelete}>Confirm</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

@@ -7,7 +7,6 @@ import { CameraModes } from "@/features/slices/settingsSlice";
 import { RootState } from "@/features/store";
 import { useAppState } from "@react-native-community/hooks";
 import * as MediaLibrary from "expo-media-library";
-import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
@@ -15,7 +14,6 @@ import Reanimated, {
   interpolate,
   useAnimatedProps,
   useDerivedValue,
-  useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {

@@ -43,14 +43,6 @@ export default function preview() {
     })();
   }, []);
 
-  const handleDelete = async () => {
-    if (asset) {
-      await MediaLibrary.deleteAssetsAsync([asset.id]);
-      const updatedAssets = assets.filter((item) => item.id !== asset.id);
-      setassets(updatedAssets);
-    }
-  };
-
   const slideY = useSharedValue(0);
   const topSlideAnimation = useAnimatedStyle(
     () => ({
@@ -120,7 +112,7 @@ export default function preview() {
                 />
               </View>
             )}
-            <PreviewMenu asset={asset} handleDelete={handleDelete} />
+            <PreviewMenu asset={asset} />
           </Animated.View>
         )}
       </View>
