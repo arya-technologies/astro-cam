@@ -1,6 +1,7 @@
 import AssetInfo from "@/components/AssetInfo";
 import ImagePreview from "@/components/ImagePreview";
 import PreviewMenu from "@/components/PreviewMenu";
+import RenderPreviewItem from "@/components/RenderPreviewItem";
 import VideoPreview from "@/components/VideoPreview";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
 import * as MediaLibrary from "expo-media-library";
@@ -20,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function preview() {
   const { colors } = useAppTheme();
   const { top, bottom } = useSafeAreaInsets();
-  const { width, height } = Dimensions.get("screen");
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
   const [asset, setasset] = useState<MediaLibrary.Asset>();
@@ -82,22 +82,7 @@ export default function preview() {
   const [isplaying, setisPlaying] = useState<boolean>(false);
 
   const renderItem = (item: MediaLibrary.Asset) => {
-    return (
-      <>
-        <Pressable onPress={handleFullScreen} style={{ width, height }}>
-          {item.mediaType === "video" ? (
-            <VideoPreview
-              key={item.id}
-              videoUri={item.uri}
-              isfullscreen={isFullScreen}
-              toggleFullscreen={toggleFullScreen}
-            />
-          ) : (
-            <ImagePreview key={item.id} imageUri={item.uri} />
-          )}
-        </Pressable>
-      </>
-    );
+    return <></>;
   };
 
   return (
@@ -124,12 +109,21 @@ export default function preview() {
           removeClippedSubviews
           maxToRenderPerBatch={1}
           windowSize={3}
+          showsHorizontalScrollIndicator={false}
           horizontal
           snapToAlignment="center"
           pagingEnabled
           data={assets}
           initialNumToRender={1}
-          renderItem={({ item }) => renderItem(item)}
+          renderItem={({ item, index }) => (
+            <RenderPreviewItem
+              asset={item}
+              index={index}
+              isFullScreen={isFullScreen}
+              toggleFullScreen={toggleFullScreen}
+              handleFullScreen={handleFullScreen}
+            />
+          )}
           className="w-full h-full absolute -z-10"
           onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
           itemLayoutAnimation={LinearTransition}
