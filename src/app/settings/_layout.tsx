@@ -11,7 +11,7 @@ export default function SettingsLayout() {
 
   return (
     <>
-      <Appbar.Header mode="small">
+      <Appbar.Header mode="small" elevated>
         <Appbar.BackAction
           onPress={() => {
             router.back();

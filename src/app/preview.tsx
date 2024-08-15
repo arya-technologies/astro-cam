@@ -1,30 +1,21 @@
-import ImagePreview from "@/components/ImagePreview";
+import AssetInfo from "@/components/AssetInfo";
+import PreviewList from "@/components/PreviewList";
 import PreviewMenu from "@/components/PreviewMenu";
 import { useAppTheme } from "@/components/providers/Material3ThemeProvider";
-import VideoPreview from "@/components/VideoPreview";
 import * as MediaLibrary from "expo-media-library";
 import { router } from "expo-router";
-import * as StatusBar from "expo-status-bar";
-import * as NavigationBar from "expo-navigation-bar";
-import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Pressable, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View } from "react-native";
 import { Appbar, IconButton } from "react-native-paper";
 import Animated, {
   interpolate,
-  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AssetInfo from "@/components/AssetInfo";
-import Slider from "@/components/Slider";
-import { useVideoPlayer } from "expo-video";
 
 export default function preview() {
   const { colors } = useAppTheme();
-  const { top, bottom } = useSafeAreaInsets();
-  const { width, height } = Dimensions.get("screen");
 
   const [assets, setassets] = useState<MediaLibrary.Asset[]>([]);
   const [asset, setasset] = useState<MediaLibrary.Asset>();
@@ -37,7 +28,7 @@ export default function preview() {
 
   useEffect(() => {
     (async function () {
-      const album = await MediaLibrary.getAlbumAsync("AstroCam");
+      const album = await MediaLibrary.getAlbumAsync("Camera");
       if (album) {
         const albumAssets = await MediaLibrary.getAssetsAsync({
           album,
@@ -46,18 +37,11 @@ export default function preview() {
         });
         if (albumAssets) {
           setassets(albumAssets.assets);
+          // console.log("albumAssets", albumAssets);
         }
       }
     })();
   }, []);
-
-  const handleDelete = async () => {
-    if (asset) {
-      await MediaLibrary.deleteAssetsAsync([asset.id]);
-      const updatedAssets = assets.filter((item) => item.id !== asset.id);
-      setassets(updatedAssets);
-    }
-  };
 
   const slideY = useSharedValue(0);
   const topSlideAnimation = useAnimatedStyle(
@@ -84,35 +68,6 @@ export default function preview() {
   };
 
   const [isplaying, setisPlaying] = useState<boolean>(false);
-  const player = useVideoPlayer(asset?.uri!, (player) => {
-    // player.loop = true;
-  });
-  useEffect(() => {
-    const subscription = player.addListener(
-      "playingChange",
-      (isplaying: boolean) => {
-        setisPlaying(isplaying);
-      },
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, [player]);
-
-  const renderItem = (item: MediaLibrary.Asset) => {
-    return (
-      <>
-        <Pressable onPress={handleFullScreen} style={{ width, height }}>
-          {item.mediaType === "video" ? (
-            <VideoPreview key={item.id} player={player} />
-          ) : (
-            <ImagePreview key={item.id} imageUri={item.uri} />
-          )}
-        </Pressable>
-      </>
-    );
-  };
 
   return (
     <>
@@ -123,7 +78,7 @@ export default function preview() {
         }}
       >
         <Animated.View style={topSlideAnimation} className="absolute w-full">
-          <Appbar.Header mode="small">
+          <Appbar.Header mode="small" elevated>
             <Appbar.BackAction
               onPress={() => {
                 router.back();
@@ -133,21 +88,11 @@ export default function preview() {
             <Appbar.Action icon="information" onPress={showInfo} />
           </Appbar.Header>
         </Animated.View>
-        <Animated.FlatList
-          renderToHardwareTextureAndroid
-          removeClippedSubviews
-          maxToRenderPerBatch={1}
-          windowSize={3}
-          horizontal
-          snapToAlignment="center"
-          pagingEnabled
+        <PreviewList
           data={assets}
-          initialNumToRender={1}
-          renderItem={({ item }) => renderItem(item)}
-          className="w-full h-full absolute -z-10"
-          onViewableItemsChanged={({ changed }) => setasset(changed[0].item)}
-          itemLayoutAnimation={LinearTransition}
-          keyExtractor={(item) => item.id}
+          setasset={setasset}
+          isFullScreen={isFullScreen}
+          toggleFullScreen={handleFullScreen}
         />
         {asset && (
           <Animated.View
@@ -160,16 +105,14 @@ export default function preview() {
                   icon={isplaying ? "stop" : "play"}
                   onPress={() => {
                     if (!isplaying) {
-                      player.play();
                     } else {
-                      player.pause();
                     }
                     setisPlaying(!isplaying);
                   }}
                 />
               </View>
             )}
-            <PreviewMenu asset={asset} handleDelete={handleDelete} />
+            <PreviewMenu asset={asset} />
           </Animated.View>
         )}
       </View>
