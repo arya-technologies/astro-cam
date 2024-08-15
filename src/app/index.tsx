@@ -125,15 +125,15 @@ export default function index() {
   };
 
   const handleCapture = async () => {
-    const asset = await MediaLibrary.createAssetAsync("");
-    const album = await MediaLibrary.getAlbumAsync("AstroCam");
-    if (!album) {
-      await MediaLibrary.createAlbumAsync("AstroCam", asset, false);
-    }
+    // const asset = await MediaLibrary.createAssetAsync("");
+    // const album = await MediaLibrary.getAlbumAsync("AstroCam");
+    // if (!album) {
+    //   await MediaLibrary.createAlbumAsync("AstroCam", asset, false);
+    // }
 
     if (mode === "picture") {
       const image = await cameraRef.current?.takePhoto({
-        path: "/storage/emulated/0/Pictures/AstroCam/",
+        path: "/storage/emulated/0/DCIM/Camera/",
       });
       if (image) {
         setlastCapturedUri(`file://${image.path}`);
@@ -145,7 +145,7 @@ export default function index() {
           videoCodec: video.videoCodec,
           videoBitRate: video.videoBitRate,
           fileType: video.videoType,
-          path: "/storage/emulated/0/Pictures/AstroCam/",
+          path: "/storage/emulated/0/DCIM/Camera/",
           onRecordingFinished: (video) => {
             setlastCapturedUri(`file://${video.path}`);
           },
