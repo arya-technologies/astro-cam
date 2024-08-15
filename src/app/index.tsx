@@ -61,7 +61,7 @@ export default function index() {
     );
   }, [exposureSliderValue, camera.device]);
 
-  const [zoomSliderValue, setzoomSliderValue] = useState<number>(50);
+  const [zoomSliderValue, setzoomSliderValue] = useState<number>(0);
   // const zoomSlider = useSharedValue(50);
   const zoom = useDerivedValue(() => {
     if (camera.device === null) return 0;
@@ -69,7 +69,7 @@ export default function index() {
       zoomSliderValue,
       // zoomSlider.value,
       [0, 50, 100],
-      [camera.device.minZoom, camera.device.neutralZoom, camera.device.maxZoom],
+      [camera.device.minZoom, camera.device.maxZoom],
     );
   }, [zoomSliderValue, camera.device]);
 
@@ -170,8 +170,8 @@ export default function index() {
       >
         <View style={{}} className="items-center">
           <AnimatedCamera
+            isActive={false}
             animatedProps={animatedProps}
-            isActive={isActive}
             ref={cameraRef}
             device={camera.device}
             format={camera.format}

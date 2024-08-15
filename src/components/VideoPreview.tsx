@@ -13,8 +13,6 @@ export default function VideoPreview({
   isfullscreen,
   toggleFullscreen,
 }: VideoPreviewProps) {
-  // const [isfullscreen, setisfullscreen] = useState<boolean>(false);
-
   const videoRef = useRef<VideoRef>(null);
   const [isplaying, setisPlaying] = useState<boolean>(true);
 

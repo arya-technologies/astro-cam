@@ -28,7 +28,7 @@ export default function preview() {
 
   useEffect(() => {
     (async function () {
-      const album = await MediaLibrary.getAlbumAsync("AstroCam");
+      const album = await MediaLibrary.getAlbumAsync("Camera");
       if (album) {
         const albumAssets = await MediaLibrary.getAssetsAsync({
           album,
@@ -37,6 +37,7 @@ export default function preview() {
         });
         if (albumAssets) {
           setassets(albumAssets.assets);
+          // console.log("albumAssets", albumAssets);
         }
       }
     })();
@@ -99,8 +100,7 @@ export default function preview() {
           data={assets}
           setasset={setasset}
           isFullScreen={isFullScreen}
-          toggleFullScreen={toggleFullScreen}
-          handleFullScreen={handleFullScreen}
+          toggleFullScreen={handleFullScreen}
         />
         {asset && (
           <Animated.View

@@ -17,8 +17,10 @@ export default function RenderPreviewItem({
   isFullScreen,
   toggleFullScreen,
 }: RenderPreviewItemProps) {
+  const { width, height } = Dimensions.get("screen");
+
   return (
-    <>
+    <Pressable onPress={toggleFullScreen} style={{ width, height }}>
       {asset.mediaType === "video" ? (
         <VideoPreview
           key={asset.id}
@@ -29,6 +31,6 @@ export default function RenderPreviewItem({
       ) : (
         <ImagePreview key={asset.id} imageUri={asset.uri} />
       )}
-    </>
+    </Pressable>
   );
 }
