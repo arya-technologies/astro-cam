@@ -86,7 +86,7 @@ export default function preview() {
         }}
       >
         <Animated.View style={topSlideAnimation} className="absolute w-full">
-          <Appbar.Header mode="small">
+          <Appbar.Header mode="small" elevated>
             <Appbar.BackAction
               onPress={() => {
                 router.back();

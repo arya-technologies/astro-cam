@@ -2,7 +2,7 @@ import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
 import { useState } from "react";
 import { View } from "react-native";
-import { IconButton, Text } from "react-native-paper";
+import { IconButton, Surface, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DeleteAssetDialog from "./DeleteAssetDialog";
 
@@ -21,7 +21,7 @@ export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
 
   return (
     <>
-      <View style={{ paddingBottom: bottom }}>
+      <Surface style={{ paddingBottom: bottom }} elevation={2}>
         <View className="flex-row items-center justify-between h-[64] px-4">
           <IconButton
             icon="share"
@@ -30,7 +30,7 @@ export default function PreviewMenu({ asset, handleDelete }: PreviewMenuProps) {
           <Text>{asset.filename}</Text>
           <IconButton icon="trash-bin" onPress={showDeleteDialog} />
         </View>
-      </View>
+      </Surface>
       <>
         <DeleteAssetDialog
           assetId={asset.id}
