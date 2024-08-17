@@ -5,6 +5,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router/stack";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
+import { ReduceMotion, ReducedMotionConfig } from "react-native-reanimated";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -21,6 +22,7 @@ export default function Layout() {
           }}
         >
           <GestureHandlerRootView style={{ flex: 1 }}>
+            <ReducedMotionConfig mode={ReduceMotion.Never} />
             <Stack
               screenOptions={{
                 animation: "default",
